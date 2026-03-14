@@ -25,7 +25,7 @@ if USE_NBCLASSIC:
         from nbclassic.utils import url_path_join  # type: ignore
     except ModuleNotFoundError as exc:  # pragma: no cover - sanity guard
         raise ImportError(
-            'JUPYTER_ASCENDING_CLASSIC=1 requires nbclassic. Install with: pip install "jupyter_ascending[classic]"'
+            "JUPYTER_ASCENDING_CLASSIC=1 requires nbclassic. Install with: pip install 'jupyter_ascending[classic]'"
         ) from exc
 else:
     try:
