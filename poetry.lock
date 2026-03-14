@@ -3163,4 +3163,4 @@ classic = ["nbclassic"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.9"
-content-hash = "3face313ef7f31da40c0eb70e3d312424f939e6718605b91ed4f52ffb3f948e9"
+content-hash = "6b8b7651acdb78c10bb18e70ca41e66fc8e3cbb9c24597ce9bc102a6fcef2d66"

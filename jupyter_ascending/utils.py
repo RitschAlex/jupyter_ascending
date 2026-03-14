@@ -13,8 +13,10 @@ if USE_NBCLASSIC:
 else:
     try:
         from jupyter_server import serverapp as notebookapp  # type: ignore
-    except ModuleNotFoundError:
-        from notebook import notebookapp  # type: ignore
+    except ModuleNotFoundError as exc:
+        raise ImportError(
+            "Notebook 7 with jupyter_server is required; install notebook>=7 or set JUPYTER_ASCENDING_CLASSIC=1 with nbclassic."
+        ) from exc
 
 
 def get_name_from_python():
