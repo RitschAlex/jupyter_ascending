@@ -33,7 +33,7 @@ else:
         from jupyter_server.utils import url_path_join  # type: ignore
     except ModuleNotFoundError as exc:
         raise ImportError(
-            "Notebook>=7 requires jupyter_server; install notebook 7+ or set JUPYTER_ASCENDING_CLASSIC=1 with nbclassic."
+            "Notebook 7 requires jupyter_server; install notebook>=7 or set JUPYTER_ASCENDING_CLASSIC=1 with nbclassic."
         ) from exc
 
 _REGISTERED_SERVERS: Dict[str, int] = {}
