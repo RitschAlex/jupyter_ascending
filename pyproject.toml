@@ -6,28 +6,32 @@ description = ""
 authors = ["Josh Albrecht <joshalbrecht@gmail.com>", "TJ DeVries <devries.timothyj@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 jupytext = "^1.14.4"
 jsonrpcserver = "^5.0.9"
 jsonrpcclient = "^4.0.3"
 loguru = ">=0.4.1"
-editdistance = "^0.6.2"
+editdistance = "^0.8.0"
+jupyter-client = "^8.6.0"
 requests = "^2.31.0"
-aiohttp = "^3.8.4"
-# will not work w version 7
-notebook= "^6.5.1"
+aiohttp = "^3.9.5"
+frozenlist = ">=1.4.1"
+pyzmq = ">=26.2.0"
+pyyaml = ">=6.0.2"
+notebook = ">=7,<8"
+# Classic UI compatibility (enabled when JUPYTER_ASCENDING_CLASSIC=1)
+nbclassic = { version = ">=1.0.0", optional = true, markers = "python_version >= '3.9'" }
 
 [tool.poetry.dev-dependencies]
-python-language-server = {extras = ["all"], version = "^0.31.9"}
-pyls-mypy = "^0.1.8"
 pyfixfmt = "^0.9.0"
 pytest = ">=7.2.0"
 pytest-asyncio = ">=0.20.3"
 
 [tool.poetry.scripts]
 
+[tool.poetry.extras]
+classic = ["nbclassic"]
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-

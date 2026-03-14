@@ -8,6 +8,9 @@ EXECUTE_HOST_URL = f"http://{EXECUTE_HOST_LOCATION[0]}:{EXECUTE_HOST_LOCATION[1]
 
 LOG_LEVEL = os.getenv("JUPYTER_ASCENDING_LOG_LEVEL", "INFO")
 SHOW_TO_STDOUT = os.getenv("JUPYTER_ASCENDING_SHOW_TO_STDOUT", False)
+
+# Flag to force the classic Notebook UI / nbclassic codepath.
+USE_NBCLASSIC = os.getenv("JUPYTER_ASCENDING_CLASSIC") == "1"
 # TODO: it would be great for this to be an environment variable... but unfortunately we need to know the value
 #  on the javascript side as well, and I'm not sure how to get this value over there easily. Would love help!
 SYNC_EXTENSION = "sync"

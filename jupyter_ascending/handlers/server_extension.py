@@ -13,12 +13,27 @@ from jsonrpcserver import Error
 from jsonrpcserver import Result
 from jsonrpcserver import Success
 from loguru import logger
-from notebook.base.handlers import IPythonHandler  # type: ignore
-from notebook.utils import url_path_join  # type: ignore
 
 from jupyter_ascending._environment import SYNC_EXTENSION
+from jupyter_ascending._environment import USE_NBCLASSIC
 from jupyter_ascending.errors import UnableToFindNotebookException
 from jupyter_ascending.functional import get_matching_tail_tokens
+
+if USE_NBCLASSIC:
+    try:
+        from nbclassic.base.handlers import IPythonHandler  # type: ignore
+        from nbclassic.utils import url_path_join  # type: ignore
+    except ModuleNotFoundError as exc:  # pragma: no cover - sanity guard
+        raise ImportError(
+            "JUPYTER_ASCENDING_CLASSIC=1 requires nbclassic to be installed."
+        ) from exc
+else:
+    try:
+        from jupyter_server.base.handlers import JupyterHandler as IPythonHandler  # type: ignore
+        from jupyter_server.utils import url_path_join  # type: ignore
+    except ModuleNotFoundError:
+        from notebook.base.handlers import IPythonHandler  # type: ignore
+        from notebook.utils import url_path_join  # type: ignore
 
 _REGISTERED_SERVERS: Dict[str, int] = {}
 

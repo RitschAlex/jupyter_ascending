@@ -16,12 +16,18 @@ def _jupyter_server_extension_paths():
         "module": "jupyter_ascending",
     }]
 
+def _jupyter_server_extension_points():
+    return [{
+        "module": "jupyter_ascending",
+    }]
+
 
 __all__ = [
     "__version__",
     "_jupyter_nbextension_paths",
     "load_ipython_extension",
     "_jupyter_server_extension_paths",
+    "_jupyter_server_extension_points",
     "load_jupyter_server_extension",
     "version_info",
 ]

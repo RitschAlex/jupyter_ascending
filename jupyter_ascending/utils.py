@@ -5,7 +5,16 @@ import urllib.request
 from contextlib import closing
 
 import ipykernel  # type: ignore
-from notebook import notebookapp  # type: ignore
+
+from jupyter_ascending._environment import USE_NBCLASSIC
+
+if USE_NBCLASSIC:
+    from nbclassic import notebookapp  # type: ignore
+else:
+    try:
+        from jupyter_server import serverapp as notebookapp  # type: ignore
+    except ModuleNotFoundError:
+        from notebook import notebookapp  # type: ignore
 
 
 def get_name_from_python():
