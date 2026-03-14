@@ -16,7 +16,7 @@ Combined with basic syncing of your code to a remote server, you can have all th
 
 ## Installation
 
-Requires Python 3.9+ with Notebook 7 (Jupyter Server). Python 3.8 is no longer supported. For the classic Notebook UI, install the optional `classic` extra (`pip install "jupyter_ascending[classic]"`) and set `JUPYTER_ASCENDING_CLASSIC=1` so the nbclassic codepath is used.
+Requires Python 3.9+ with Notebook 7 (Jupyter Server). Python 3.8 is no longer supported. If you need the classic Notebook UI, install the optional `classic` extra (`pip install "jupyter_ascending[classic]"`) and set `JUPYTER_ASCENDING_CLASSIC=1` so the nbclassic codepath is used.
 
 ```
 $ pip install jupyter_ascending && \
