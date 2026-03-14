@@ -32,6 +32,7 @@ else:
         from jupyter_server.base.handlers import JupyterHandler as IPythonHandler  # type: ignore
         from jupyter_server.utils import url_path_join  # type: ignore
     except ModuleNotFoundError:
+        logger.debug("jupyter_server not available; falling back to notebook handler imports.")
         from notebook.base.handlers import IPythonHandler  # type: ignore
         from notebook.utils import url_path_join  # type: ignore
 
