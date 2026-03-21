@@ -2,7 +2,6 @@
 
 // debugger;
 define(["base/js/namespace"], function (Jupyter) {
-    "use strict";
 
     window["requirejs"].config({
         map: {

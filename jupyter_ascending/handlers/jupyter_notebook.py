@@ -14,12 +14,14 @@ from typing import List
 from typing import Optional
 from typing import Type
 
-import jupytext
-import requests
-from ipykernel.comm import Comm
-from jsonrpcclient import request
-from jsonrpcserver import Success
-from loguru import logger
+import jupytext  # type: ignore
+import requests  # type: ignore
+from ipykernel.comm import Comm  # type: ignore
+# from jsonrpcclient import request  # type: ignore
+# from jsonrpcserver import Success  # type: ignore
+from ..jsonrpc_utils import Success, Result
+from ..jsonrpc_utils import request
+from loguru import logger  # type: ignore
 
 from jupyter_ascending._environment import EXECUTE_HOST_URL
 from jupyter_ascending.handlers import ServerMethods
@@ -40,7 +42,8 @@ from jupyter_ascending.utils import find_free_port
 
 COMM_NAME = "AUTO_SYNC::notebook"
 
-notebook_server_methods = ServerMethods("JupyterNotebook Start", "JupyterNotebook Close")
+notebook_server_methods = ServerMethods("JupyterNotebook Start",
+                                        "JupyterNotebook Close")
 
 merge_complete = False
 
@@ -59,11 +62,16 @@ def start_notebook_server_in_thread(notebook_name: str, status_widget=None):
     # TODO: This might be a race condition if a bunch of these started at once...
     notebook_server_port = find_free_port()
 
-    notebook_executor = HTTPServer(("localhost", notebook_server_port), NotebookKernelRequestHandler,)
-    notebook_executor_thread = threading.Thread(target=notebook_executor.serve_forever)
+    notebook_executor = HTTPServer(
+        ("localhost", notebook_server_port),
+        NotebookKernelRequestHandler,
+    )
+    notebook_executor_thread = threading.Thread(
+        target=notebook_executor.serve_forever)
     notebook_executor_thread.start()
 
     logger.info("IPYTHON: Registering notebook {}", notebook_path)
+    print("IPYTHON: Registering notebook {}", notebook_path)
     json = request(
         register_notebook_server.__name__,
         params=dict(
@@ -86,9 +94,10 @@ def dispatch_json_request(f):
 
     # Get the type from the first argument of the function.
     #   This will define the name that we use to generate the method handling.
-    request_type = signature(f).parameters["request_type"].annotation.__args__[0]
+    request_type = signature(
+        f).parameters["request_type"].annotation.__args__[0]
 
-    def wrapped(data: Dict) -> str:
+    def wrapped(data: Dict) -> Result:
         return Success(f(request_type, data))
 
     wrapped.__name__ = request_type.__name__
@@ -97,7 +106,8 @@ def dispatch_json_request(f):
 
 
 @dispatch_json_request
-def handle_execute_request(request_type: Type[ExecuteRequest], data: dict) -> str:
+def handle_execute_request(request_type: Type[ExecuteRequest],
+                           data: dict) -> str:
     """JSON-RPC request handler for 'execute cell'"""
     request = request_type(**data)
 
@@ -108,7 +118,8 @@ def handle_execute_request(request_type: Type[ExecuteRequest], data: dict) -> st
 
 
 @dispatch_json_request
-def handle_execute_all_request(request_type: Type[ExecuteAllRequest], data: dict) -> str:
+def handle_execute_all_request(request_type: Type[ExecuteAllRequest],
+                               data: dict) -> str:
     """JSON-RPC request handler for 'execute all cells'"""
     request = request_type(**data)
 
@@ -139,7 +150,8 @@ def handle_sync_request(request_type: Type[SyncRequest], data: dict) -> str:
 
 
 @dispatch_json_request
-def handle_focus_cell_request(request_type: Type[FocusCellRequest], data: dict) -> str:
+def handle_focus_cell_request(request_type: Type[FocusCellRequest],
+                              data: dict) -> str:
     """JSON-RPC request handler for 'focus cell'"""
     request = request_type(**data)
 
@@ -148,7 +160,8 @@ def handle_focus_cell_request(request_type: Type[FocusCellRequest], data: dict) 
 
 
 @dispatch_json_request
-def handle_get_status_request(request_type: Type[GetStatusRequest], data: dict) -> str:
+def handle_get_status_request(request_type: Type[GetStatusRequest],
+                              data: dict) -> str:
     """JSON-RPC request handler for 'get status'"""
     logger.info("Attempting get_status")
 
@@ -161,7 +174,8 @@ def handle_get_status_request(request_type: Type[GetStatusRequest], data: dict) 
 
 
 @dispatch_json_request
-def handle_restart_request(request_type: Type[RestartRequest], data: dict) -> str:
+def handle_restart_request(request_type: Type[RestartRequest],
+                           data: dict) -> str:
     """JSON-RPC request handler for 'restart'"""
     request = request_type(**data)
 
@@ -172,7 +186,8 @@ def handle_restart_request(request_type: Type[RestartRequest], data: dict) -> st
     return f"Restarting kernel in {request.file_name}"
 
 
-NotebookKernelRequestHandler = generate_request_handler("NotebookKernel", notebook_server_methods)
+NotebookKernelRequestHandler = generate_request_handler(
+    "NotebookKernel", notebook_server_methods)
 
 
 def make_comm():
@@ -216,12 +231,19 @@ def update_cell_contents(comm: Comm, result: Dict[str, Any]) -> None:
     # logger.info(Javascript("Jupyter.notebook.get_cells()"))
     def _transform_jupytext_cells(jupytext_cells) -> List[Dict[str, Any]]:
         """TODO: what does this do?"""
-        return [
-            {"index": i, "output": [], **{k: v for (k, v) in x.items() if k not in {"outputs", "metadata"}}}
-            for i, x in enumerate(result["cells"])
-        ]
+        return [{
+            "index": i,
+            "output": [],
+            **{
+                k: v
+                for (k, v) in x.items() if k not in {"outputs", "metadata"}
+            }
+        } for i, x in enumerate(result["cells"])]
 
-    comm.send({"command": "start_sync_notebook", "cells": _transform_jupytext_cells(result["cells"])})
+    comm.send({
+        "command": "start_sync_notebook",
+        "cells": _transform_jupytext_cells(result["cells"])
+    })
 
     # Wait for the merge_complete flag to get set in the callback.
     # This way we don't release the lock before syncing is done.
@@ -258,20 +280,18 @@ def get_output_text(javascript_cell) -> Optional[str]:
 @logger.catch(reraise=True)
 def merge_notebooks(comm: Comm, result: Dict[str, Any]) -> None:
     javascript_cells = result["javascript_cells"]
-    current_notebook = NotebookContents(
-        cells=[
-            JupyterCell(
-                index=i,
-                cell_type=x["cell_type"],
-                source=x["source"],
-                output=get_output_text(x),
-                # metadata=x["metadata"],
-            )
-            for i, x in enumerate(javascript_cells)
-        ]
-    )
+    current_notebook = NotebookContents(cells=[
+        JupyterCell(
+            index=i,
+            cell_type=x["cell_type"],
+            source=x["source"],
+            output=get_output_text(x),
+            # metadata=x["metadata"],
+        ) for i, x in enumerate(javascript_cells)
+    ])
 
-    new_notebook = NotebookContents(cells=[JupyterCell(**x) for x in result["new_notebook"]])
+    new_notebook = NotebookContents(
+        cells=[JupyterCell(**x) for x in result["new_notebook"]])
 
     opcodes = opcode_merge_cell_contents(current_notebook, new_notebook)
     logger.info("Performing Opcodes...")
@@ -279,7 +299,8 @@ def merge_notebooks(comm: Comm, result: Dict[str, Any]) -> None:
 
     net_shift = 0
     for op_action in opcodes:
-        net_shift = perform_op_code(comm, op_action, current_notebook, new_notebook, net_shift)
+        net_shift = perform_op_code(comm, op_action, current_notebook,
+                                    new_notebook, net_shift)
 
     logger.info("sending finish_merge command")
     comm.send({"command": "finish_merge"})
@@ -308,7 +329,10 @@ def perform_op_code(
 
         # Since deletion is a bit goofy for jupyter, so it has to be adjusted by net shift thus far.
         cells_to_delete = [x + net_shift for x in range(*op_action.current)]
-        comm.send({"command": "op_code__delete_cells", "cell_indices": cells_to_delete})
+        comm.send({
+            "command": "op_code__delete_cells",
+            "cell_indices": cells_to_delete
+        })
 
         net_shift = net_shift - len(cells_to_delete)
 
@@ -317,14 +341,16 @@ def perform_op_code(
 
         cells_to_insert = list(range(*op_action.updated))
         for cell_number in cells_to_insert:
-            comm.send(
-                {
-                    "command": "op_code__insert_cell",
-                    "cell_number": cell_number,
-                    "cell_type": updated_notebook.cells[cell_number].cell_type,
-                    "cell_contents": updated_notebook.cells[cell_number].joined_source,
-                }
-            )
+            comm.send({
+                "command":
+                "op_code__insert_cell",
+                "cell_number":
+                cell_number,
+                "cell_type":
+                updated_notebook.cells[cell_number].cell_type,
+                "cell_contents":
+                updated_notebook.cells[cell_number].joined_source,
+            })
 
         net_shift = net_shift + len(cells_to_insert)
 
@@ -338,14 +364,16 @@ def perform_op_code(
             if current_cells:
                 current_cells.pop(0)
 
-                comm.send(
-                    {
-                        "command": "op_code__replace_cell",
-                        "cell_number": cell_number,
-                        "cell_type": updated_notebook.cells[cell_number].cell_type,
-                        "cell_contents": updated_notebook.cells[cell_number].joined_source,
-                    }
-                )
+                comm.send({
+                    "command":
+                    "op_code__replace_cell",
+                    "cell_number":
+                    cell_number,
+                    "cell_type":
+                    updated_notebook.cells[cell_number].cell_type,
+                    "cell_contents":
+                    updated_notebook.cells[cell_number].joined_source,
+                })
             # Otherwise, we have new cells to insert so we don't overwrite existing cells
             else:
                 net_shift = perform_op_code(

@@ -3,22 +3,20 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 
-from aiohttp import ClientSession
-from jsonrpcclient import Ok
-from jsonrpcclient import parse
-from jsonrpcclient import request
-from jsonrpcserver import async_dispatch as dispatch
-from jsonrpcserver import method
-from jsonrpcserver import Error
-from jsonrpcserver import Result
-from jsonrpcserver import Success
-from loguru import logger
-from notebook.base.handlers import IPythonHandler  # type: ignore
-from notebook.utils import url_path_join  # type: ignore
+from loguru import logger  # type: ignore
+from aiohttp import ClientSession  # type: ignore
+
+from ..jsonrpc_utils import parse, request, method
+from ..jsonrpc_utils import async_dispatch as dispatch
+from ..jsonrpc_utils import Ok, Error, Success, Result
 
 from jupyter_ascending._environment import SYNC_EXTENSION
 from jupyter_ascending.errors import UnableToFindNotebookException
 from jupyter_ascending.functional import get_matching_tail_tokens
+
+from jupyter_server.utils import url_path_join  # type: ignore
+from jupyter_server.auth.decorator import allow_unauthenticated  # type: ignore
+from jupyter_server.base.handlers import JupyterHandler as IPythonHandler  # type: ignore
 
 _REGISTERED_SERVERS: Dict[str, int] = {}
 
@@ -30,6 +28,16 @@ def _clear_registered_servers():
 
 
 class JupyterAscendingHandler(IPythonHandler):
+
+    def check_xsrf_cookie(self):
+        """Disable XSRF cookie checking on this request type"""
+        return
+
+    def check_origin(self):
+        """Disable origin checking on this request type"""
+        return True
+
+    @allow_unauthenticated
     async def post(self) -> None:
         """We receive commands as HTTP POST requests.
 
@@ -44,9 +52,6 @@ class JupyterAscendingHandler(IPythonHandler):
         logger.info("Got Response:\n\t\t{}", response)
         self.write(str(response))
 
-    def check_xsrf_cookie(self):
-        """Disable XSRF cookie checking on this request type"""
-
 
 def load_extension(nb_server_app):
     """
@@ -57,26 +62,32 @@ def load_extension(nb_server_app):
     """
     web_app = nb_server_app.web_app
     host_pattern = ".*$"
-    route_pattern = url_path_join(web_app.settings["base_url"], "/jupyter_ascending")
-    web_app.add_handlers(host_pattern, [(route_pattern, JupyterAscendingHandler)])
+    route_pattern = url_path_join(web_app.settings["base_url"],
+                                  "/jupyter_ascending")
+    web_app.add_handlers(host_pattern,
+                         [(route_pattern, JupyterAscendingHandler)])
 
 
 @method
-async def register_notebook_server(notebook_path: str, port_number: int) -> Result:
-    logger.info("Registering notebook {notebook} on port {port}", notebook=notebook_path, port=port_number)
+async def register_notebook_server(notebook_path: str,
+                                   port_number: int) -> Result:
+    logger.info("Registering notebook {notebook} on port {port}",
+                notebook=notebook_path,
+                port=port_number)
 
     _REGISTERED_SERVERS[notebook_path] = port_number
 
     logger.debug("Updated notebook mappings: {}", _REGISTERED_SERVERS)
+    print("Updated notebook mappings: {}", _REGISTERED_SERVERS)
     return Success()
 
 
 @method
-async def perform_notebook_request(notebook_path: str, command_name: str, data: Dict[str, Any]) -> Result:
+async def perform_notebook_request(notebook_path: str, command_name: str,
+                                   data: Dict[str, Any]) -> Result:
     """Receives a command from the client library, picks the notebook that matches
     the filepath, and forwards the command along to that notebook."""
     logger.debug("Performing notebook request... ")
-
     try:
         notebook_server = get_server_for_notebook(notebook_path)
     except UnableToFindNotebookException as e:
@@ -101,14 +112,16 @@ Exception details:
 
 
 def _make_url(notebook_port: int):
-    return f"http://localhost:{notebook_port}"
+    return f"http://localhost:{notebook_port}/nbclassic"
 
 
 def get_server_for_notebook(notebook_str: str) -> Optional[str]:
     """Get the URL to the server running on the Jupyter notebook that best matches this filename."""
     # Normalize to notebook path
-    notebook_str = notebook_str.replace(f".{SYNC_EXTENSION}.py", f".{SYNC_EXTENSION}.ipynb")
-    logger.debug("Finding server for notebook_str, script_path: {}", notebook_str)
+    notebook_str = notebook_str.replace(f".{SYNC_EXTENSION}.py",
+                                        f".{SYNC_EXTENSION}.ipynb")
+    logger.debug("Finding server for notebook_str, script_path: {}",
+                 notebook_str)
 
     notebook_path = Path(notebook_str)
 
@@ -127,9 +140,14 @@ def get_server_for_notebook(notebook_str: str) -> Optional[str]:
          -> 0
 
         """
-        return len(get_matching_tail_tokens(notebook_path.parts, Path(registered_name).parts))
+        return len(
+            get_matching_tail_tokens(notebook_path.parts,
+                                     Path(registered_name).parts))
 
-    score_by_name = {x: get_score_for_name(x) for x in _REGISTERED_SERVERS.keys()}
+    score_by_name = {
+        x: get_score_for_name(x)
+        for x in _REGISTERED_SERVERS.keys()
+    }
 
     if len(score_by_name) == 0:
         raise UnableToFindNotebookException(f"No registered notebooks")
@@ -137,7 +155,8 @@ def get_server_for_notebook(notebook_str: str) -> Optional[str]:
     max_score = max(score_by_name.values())
 
     if max_score <= 0:
-        raise UnableToFindNotebookException(f"Could not find server for notebook_str: {notebook_str}")
+        raise UnableToFindNotebookException(
+            f"Could not find server for notebook_str: {notebook_str}")
 
     # Only found one reasonable notebook.
     best_scores = [k for k, v in score_by_name.items() if v == max_score]
@@ -148,4 +167,5 @@ def get_server_for_notebook(notebook_str: str) -> Optional[str]:
         logger.debug("Found server at port {}", notebook_port)
         return _make_url(notebook_port)
     else:
-        raise UnableToFindNotebookException(f"Could not find server for notebook_str: {notebook_str}")
+        raise UnableToFindNotebookException(
+            f"Could not find server for notebook_str: {notebook_str}")

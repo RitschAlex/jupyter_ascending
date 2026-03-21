@@ -5,7 +5,7 @@ import urllib.request
 from contextlib import closing
 
 import ipykernel  # type: ignore
-from notebook import notebookapp  # type: ignore
+from jupyter_server import serverapp as notebookapp  # type: ignore
 
 
 def get_name_from_python():
@@ -21,14 +21,18 @@ def get_name_from_python():
 
     for srv in notebookapp.list_running_servers():
         try:
-            if srv["token"] == "" and not srv["password"]:  # No token and no password, ahem...
+            if srv["token"] == "" and not srv[
+                    "password"]:  # No token and no password, ahem...
                 req = urllib.request.urlopen(srv["url"] + "api/sessions")
             else:
-                req = urllib.request.urlopen(srv["url"] + "api/sessions?token=" + srv["token"])
+                req = urllib.request.urlopen(srv["url"] +
+                                             "api/sessions?token=" +
+                                             srv["token"])
             sessions = json.load(req)
             for sess in sessions:
                 if sess["kernel"]["id"] == kernel_id:
-                    return os.path.join(srv["notebook_dir"], sess["notebook"]["path"])
+                    return os.path.join(srv["root_dir"],
+                                        sess["notebook"]["path"])
         except:
             pass  # There may be stale entries in the runtime directory
 
