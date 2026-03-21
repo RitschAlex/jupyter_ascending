@@ -1,31 +1,34 @@
 [build-system]
 requires = [
   "hatchling>=1.5.0",
-  "jupyterlab>=4.0.0,<5.0.0",
-  "hatch-nodejs-version",
 ]
 build-backend = "hatchling.build"
 
 [project]
 name = "jupyter_ascending"
+authors = [
+  { name = "Josh Albrecht", email = "joshalbrecht@gmail.com" },
+  { name = "TJ DeVries", email ="devries.timothyj@gmail.com" }
+]
+description = "A Jupyter nbclassic extension for syncing notebooks with code files."
 readme = "README.md"
+version = "0.1.28"
 license = {file = "LICENSE"}
 requires-python = ">=3.11,<4.0"
 classifiers = [
-    "Framework :: Jupyter",
-    "Framework :: Jupyter :: JupyterLab",
-    "Framework :: Jupyter :: JupyterLab :: 4",
-    "Framework :: Jupyter :: JupyterLab :: Extensions",
-    "Framework :: Jupyter :: JupyterLab :: Extensions :: Prebuilt",
-    "License :: OSI Approved :: MIT License",
-    "Programming Language :: Python",
-    "Programming Language :: Python :: 3",
+  "Framework :: Jupyter",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = [
 "jupytext>=1.14.4",
-"jsonrpcserver>=5.0.9",
-"jsonrpcclient>=4.0.3",
 "loguru>=0.7.3",
 "editdistance>=0.8.0",
 "jupyter-client>=8.6.0",
@@ -39,52 +42,11 @@ dependencies = [
 "requests>=2.32.5"
 ]
 
-dynamic = ["version", "description", "authors", "urls", "keywords"]
-
 [tool.hatch.version]
-source = "nodejs"
-path = "package.json"
-
-[tool.hatch.metadata.hooks.nodejs]
-fields = ["description", "authors", "urls", "keywords"]
-
-[tool.hatch.build.targets.sdist]
-artifacts = ["jupyter_ascending/labextension"]
-exclude = [".github", "binder"]
-
-[tool.hatch.build.hooks.version]
 path = "jupyter_ascending/_version.py"
 
-# --- THE JUPYTER-BUILDER HOOK ---
-[tool.hatch.build.hooks.jupyter-builder]
-dependencies = ["hatch-jupyter-builder>=0.5"]
-build-function = "hatch_jupyter_builder.npm_builder"
-ensured_targets = [
-  "jupyter_ascending/labextension/package.json"
-]
-skip-if-exists = ["jupyter_ascending/labextension/package.json"]
-
-[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
-build_cmd = "build:prod"
-npm = ["jlpm"]
-
-[tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
-build_cmd = "install:extension"
-npm = ["jlpm"]
-source_dir = "src"
-build_dir = "jupyter_ascending/labextension"
-
-# --- RELEASE TOOLING ---
-[tool.jupyter-releaser.hooks]
-before-build-npm = [
-  "python -m pip install 'jupyterlab>=4.0.0<5'",
-  "jlpm",
-  "jlpm build:prod"
-]
-before-build-python = ["jlpm clean:all"]
-
 [tool.check-wheel-contents]
-ignore = ["W002"]
+ignore = ["W002", "W004"]
 
 [tool.poetry]
-package-mode = false
+package-mode = true

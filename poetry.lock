@@ -1243,38 +1243,6 @@ files = [
 ]
 
 [[package]]
-name = "jsonrpcclient"
-version = "4.0.3"
-description = "Send JSON-RPC requests"
-optional = false
-python-versions = ">=3.6"
-groups = ["main"]
-files = [
-    {file = "jsonrpcclient-4.0.3-py3-none-any.whl", hash = "sha256:3cbb9e27e1be29821becf135ea183144a836215422727e1ffe5056a49a670f0d"},
-]
-
-[package.extras]
-qa = ["pytest", "pytest-cov", "tox"]
-
-[[package]]
-name = "jsonrpcserver"
-version = "5.0.9"
-description = "Process JSON-RPC requests"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "jsonrpcserver-5.0.9.tar.gz", hash = "sha256:a71fb2cfa18541c80935f60987f92755d94d74141248c7438847b96eee5c4482"},
-]
-
-[package.dependencies]
-jsonschema = "<5"
-oslash = "<1"
-
-[package.extras]
-examples = ["aiohttp", "aiozmq", "flask", "flask-socketio", "gmqtt", "pyzmq", "tornado", "websockets", "werkzeug"]
-
-[[package]]
 name = "jsonschema"
 version = "4.26.0"
 description = "An implementation of JSON Schema validation for Python"
@@ -2101,21 +2069,6 @@ jupyter-server = ">=1.8,<3"
 
 [package.extras]
 test = ["pytest", "pytest-console-scripts", "pytest-jupyter", "pytest-tornasync"]
-
-[[package]]
-name = "oslash"
-version = "0.6.3"
-description = "OSlash (Ø) for Python 3.8+"
-optional = false
-python-versions = "*"
-groups = ["main"]
-files = [
-    {file = "OSlash-0.6.3-py3-none-any.whl", hash = "sha256:89b978443b7db3ac2666106bdc3680add3c886a6d8fcdd02fd062af86d29494f"},
-    {file = "OSlash-0.6.3.tar.gz", hash = "sha256:868aeb58a656f2ed3b73d9dd6abe387b20b74fc9413d3e8653b615b15bf728f3"},
-]
-
-[package.dependencies]
-typing-extensions = "*"
 
 [[package]]
 name = "overrides"
@@ -3337,4 +3290,4 @@ propcache = ">=0.2.1"
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.11,<4.0"
-content-hash = "bb416e24300f65965b536edce08807942ce9e784bb72c9346d450afee4ac21b1"
+content-hash = "76eb3ca715835c2dca30ee40803f35c192bfd35898ff5fef5130c935b03f56fa"
