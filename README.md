@@ -13,20 +13,22 @@ It's the best of both worlds--the autocomplete, keybindings, and refactoring too
 
 Combined with basic syncing of your code to a remote server, you can have all the power of a beefy dev-server with all the convenience of editing code locally.
 
+The repository is a fork of [@imbue-ai/jupyter_ascending](https://github.com/imbue-ai/jupyter_ascending). The original project has been unmaintained for several years and
+was limited to Jupyter Notebook v6.x. This fork updates the codebase to keep the project alive and make it work with Jupyter Notebook nbclassic.
 
 ## Installation
 
 ```
-$ pip install jupyter_ascending && \
-python -m jupyter nbextension    install jupyter_ascending --sys-prefix --py && \
-python -m jupyter nbextension     enable jupyter_ascending --sys-prefix --py && \
-python -m jupyter serverextension enable jupyter_ascending --sys-prefix --py
+$ pip install git+https://github.com/RitschAlex/jupyter_ascending.git && \
+python -m jupyter nbclassic-extension    install jupyter_ascending --sys-prefix --py && \
+python -m jupyter nbclassic-extension     enable jupyter_ascending --sys-prefix --py && \
+python -m jupyter nbclassic-serverextension enable jupyter_ascending --sys-prefix --py
 ```
 
 You can confirm it's installed by checking for `jupyter_ascending` in:
 ```
-$ python -m jupyter nbextension     list
-$ python -m jupyter serverextension list
+$ python -m jupyter nbclassic-extension     list
+$ python -m jupyter nbclassic-serverextension list
 ```
 
 If your jupyter setup includes multiple python kernels that you'd like to use with jupyter ascending, you'll need to complete this setup in each of those python environments separately.
@@ -61,6 +63,7 @@ If your jupyter setup includes multiple python kernels that you'd like to use wi
 
 Set up one of the editor integrations to do all of this from within your favorite editor!
 - [Vim](https://github.com/untitled-ai/jupyter_ascending.vim)
+- [Nvim](https://github.com/RitschAlex/jupyter_ascending.nvim)
 - [Visual Studio Code](docs/VSCODE.md)
 - [PyCharm](docs/PYCHARM.md)
 - [Other editors](docs/OTHER_EDITORS.md)
@@ -132,7 +135,7 @@ $ python -m jupyter serverextension enable jupyter_ascending --sys-prefix --py
 To check that they are enabled, do something like this:
 
 ```
-$ python -m jupyter nbextension list
+$ python -m jupyter nbclassic-extension list
 Known nbextensions:
   config dir: /home/tj/.pyenv/versions/3.8.1/envs/general/etc/jupyter/nbconfig
     notebook section
@@ -143,7 +146,7 @@ Known nbextensions:
       jupyter_ascending/extension  enabled
       - Validating: OK
 
-$ python -m jupyter serverextension list
+$ python -m jupyter nbclassic-serverextension list
 config dir: /home/tj/.pyenv/versions/3.8.1/envs/general/etc/jupyter
     jupytext  enabled
     - Validating...
