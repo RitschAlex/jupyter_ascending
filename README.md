@@ -13,20 +13,22 @@ It's the best of both worlds--the autocomplete, keybindings, and refactoring too
 
 Combined with basic syncing of your code to a remote server, you can have all the power of a beefy dev-server with all the convenience of editing code locally.
 
+The repository is a fork of [@imbue-ai/jupyter_ascending](https://github.com/imbue-ai/jupyter_ascending). The original project has been unmaintained for several years and
+was limited to Jupyter Notebook v6.x. This fork updates the codebase to keep the project alive and make it work with Jupyter Notebook nbclassic.
 
 ## Installation
 
 ```
-$ pip install jupyter_ascending && \
-python -m jupyter nbextension    install jupyter_ascending --sys-prefix --py && \
-python -m jupyter nbextension     enable jupyter_ascending --sys-prefix --py && \
-python -m jupyter serverextension enable jupyter_ascending --sys-prefix --py
+$ pip install git+https://github.com/RitschAlex/jupyter_ascending.git && \
+python -m jupyter nbclassic-extension    install jupyter_ascending --sys-prefix --py && \
+python -m jupyter nbclassic-extension     enable jupyter_ascending --sys-prefix --py && \
+python -m jupyter nbclassic-serverextension enable jupyter_ascending --sys-prefix --py
 ```
 
 You can confirm it's installed by checking for `jupyter_ascending` in:
 ```
-$ python -m jupyter nbextension     list
-$ python -m jupyter serverextension list
+$ python -m jupyter nbclassic-extension     list
+$ python -m jupyter nbclassic-serverextension list
 ```
 
 If your jupyter setup includes multiple python kernels that you'd like to use with jupyter ascending, you'll need to complete this setup in each of those python environments separately.
@@ -40,9 +42,10 @@ If your jupyter setup includes multiple python kernels that you'd like to use wi
    This makes a pair of synced py and ipynb files, `example.sync.py` and `example.sync.ipynb`.
 
 
-2) Start jupyter and open the notebook:
+2) Start jupyter and open the notebook: Currently Jupyter Ascending expects the jupyter server to be running at `localhost:8888/nbclassic` (fe `localhost:8888/nbclassic/notebooks/example.sync.ipynb`)
 
-   `python -m jupyter notebook example.sync.ipynb`
+   `python -m jupyter nbclassic example.sync.ipynb`
+
 
 
 3) Add some code to the `.sync.py` file, e.g.
@@ -61,6 +64,7 @@ If your jupyter setup includes multiple python kernels that you'd like to use wi
 
 Set up one of the editor integrations to do all of this from within your favorite editor!
 - [Vim](https://github.com/untitled-ai/jupyter_ascending.vim)
+- [Nvim](https://github.com/RitschAlex/jupyter_ascending.nvim)
 - [Visual Studio Code](docs/VSCODE.md)
 - [PyCharm](docs/PYCHARM.md)
 - [Other editors](docs/OTHER_EDITORS.md)
@@ -68,7 +72,7 @@ Set up one of the editor integrations to do all of this from within your favorit
 
 ### Working with multiple jupyter servers or alternate ports
 
-Currently Jupyter Ascending expects the jupyter server to be running at `localhost:8888`. If it's running elsewhere (eg due to having multiple jupyter notebooks open), you'll need to set the env variables `JUPYTER_ASCENDING_EXECUTE_HOST` and `JUPYTER_ASCENDING_EXECUTE_PORT` appropriately both where you use the client (ie in your editor) and where you start the server.
+Currently Jupyter Ascending expects the jupyter server to be running at `localhost:8888/nbclassic`. If it's running elsewhere (eg due to having multiple jupyter notebooks open), you'll need to set the env variables `JUPYTER_ASCENDING_EXECUTE_HOST` and `JUPYTER_ASCENDING_EXECUTE_PORT` appropriately both where you use the client (ie in your editor) and where you start the server.
 
 By default the Jupyter server will search for a free port starting at 8888. If 8888 is unavailable and it selects eg 8889, Jupyter Ascending won't work - as it's expecting to connect to 8888. To force Jupyter to use a specific port, start your jupyter notebook with `JUPYTER_PORT=8888 JUPYTER_PORT_RETRIES=0 jupyter notebook` (or whatever port you want, setting also `JUPYTER_ASCENDING_EXECUTE_PORT` appropriately).
 
@@ -122,17 +126,17 @@ $ poetry install
 $ poetry shell
 
 # Installs the extension, using symlinks
-$ python -m jupyter nbextension install --py --sys-prefix --symlink jupyter_ascending
+$ python -m jupyter nbclassic-extension install --py --sys-prefix --symlink jupyter_ascending
 
 # Enables them, so it auto loads
-$ python -m jupyter nbextension enable jupyter_ascending --py --sys-prefix
-$ python -m jupyter serverextension enable jupyter_ascending --sys-prefix --py
+$ python -m jupyter nbclassic-extension enable jupyter_ascending --py --sys-prefix
+$ python -m jupyter nbclassic-serverextension enable jupyter_ascending --sys-prefix --py
 ```
 
 To check that they are enabled, do something like this:
 
 ```
-$ python -m jupyter nbextension list
+$ python -m jupyter nbclassic-extension list
 Known nbextensions:
   config dir: /home/tj/.pyenv/versions/3.8.1/envs/general/etc/jupyter/nbconfig
     notebook section
@@ -143,7 +147,7 @@ Known nbextensions:
       jupyter_ascending/extension  enabled
       - Validating: OK
 
-$ python -m jupyter serverextension list
+$ python -m jupyter nbclassic-serverextension list
 config dir: /home/tj/.pyenv/versions/3.8.1/envs/general/etc/jupyter
     jupytext  enabled
     - Validating...

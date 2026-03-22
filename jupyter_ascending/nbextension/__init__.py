@@ -6,11 +6,9 @@
 
 
 def _jupyter_nbextension_paths():
-    return [
-        {
-            "section": "notebook",
-            "src": "nbextension/static",
-            "dest": "jupyter_ascending",
-            "require": "jupyter_ascending/extension",
-        }
-    ]
+    return [{
+        "section": "notebook",
+        "src": "nbextension/static",
+        "dest": "jupyter_ascending",
+        "require": "jupyter_ascending/extension",
+    }]

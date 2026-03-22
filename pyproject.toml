@@ -1,33 +1,52 @@
-[tool.poetry]
-name = "jupyter_ascending"
-# Make sure to also update _version.py when doing version bump.
-version = "0.1.27"
-description = ""
-authors = ["Josh Albrecht <joshalbrecht@gmail.com>", "TJ DeVries <devries.timothyj@gmail.com>"]
-
-[tool.poetry.dependencies]
-python = "^3.8"
-jupytext = "^1.14.4"
-jsonrpcserver = "^5.0.9"
-jsonrpcclient = "^4.0.3"
-loguru = ">=0.4.1"
-editdistance = "^0.6.2"
-requests = "^2.31.0"
-aiohttp = "^3.8.4"
-# will not work w version 7
-notebook= "^6.5.1"
-
-[tool.poetry.dev-dependencies]
-python-language-server = {extras = ["all"], version = "^0.31.9"}
-pyls-mypy = "^0.1.8"
-pyfixfmt = "^0.9.0"
-pytest = ">=7.2.0"
-pytest-asyncio = ">=0.20.3"
-
-[tool.poetry.scripts]
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = [
+  "hatchling>=1.5.0",
+]
+build-backend = "hatchling.build"
 
+[project]
+name = "jupyter_ascending"
+authors = [
+  { name = "Josh Albrecht", email = "joshalbrecht@gmail.com" },
+  { name = "TJ DeVries", email ="devries.timothyj@gmail.com" }
+]
+description = "A Jupyter nbclassic extension for syncing notebooks with code files."
+readme = "README.md"
+version = "0.1.28"
+license = {file = "LICENSE"}
+requires-python = ">=3.11,<4.0"
+classifiers = [
+  "Framework :: Jupyter",
+  "License :: OSI Approved :: BSD License",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+]
 
+dependencies = [
+"jupytext>=1.14.4",
+"loguru>=0.7.3",
+"editdistance>=0.8.0",
+"jupyter-client>=8.6.0",
+"aiohttp>=3.9.5",
+"frozenlist>=1.4.1",
+"pyzmq>=26.2.0",
+"pyyaml>=6.0.2",
+"notebook>=7,<8",
+"nbclassic>=1.1",
+"jupyter_server>=2.17",
+"requests>=2.32.5"
+]
+
+[tool.hatch.version]
+path = "jupyter_ascending/_version.py"
+
+[tool.check-wheel-contents]
+ignore = ["W002", "W004"]
+
+[tool.poetry]
+package-mode = true

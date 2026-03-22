@@ -1,50 +1,12 @@
-from functools import wraps
+from loguru import logger  # type: ignore
 from http.server import BaseHTTPRequestHandler
-from typing import Callable
 
-from jsonrpcserver import dispatch
-from jsonrpcserver import methods
-from loguru import logger
+from ..jsonrpc_utils import ServerMethods
+from ..jsonrpc_utils import dispatch
 
 
-def _wrap_request(f: Callable, start_msg: str, close_msg: str):
-    @wraps(f)
-    @logger.catch
-    def wrapper(*args, **kwargs):
-        logger.debug("{}: {}", start_msg, f.__name__)
-
-        result = f(*args, **kwargs)
-
-        logger.debug("{}: {}", close_msg, result)
-
-        return result
-
-    return wrapper
-
-
-class ServerMethods:
-    """
-    Wrapper to make some things a bit nicer around jsonrpcserver.methods.Methods
-
-    Basically our own version of jsonrpcserver.methods.Methods, wrapping each method with auto
-    logging and error catching so that you don't have to remember to do that.
-    """
-
-    def __init__(self, start_msg: str, close_msg: str):
-        self.items = {}
-        self.start_msg = start_msg
-        self.close_msg = close_msg
-
-    def add(self, f: Callable) -> Callable:
-        self.items[f.__name__] = f
-
-        return _wrap_request(f, self.start_msg, self.close_msg)
-
-    def __getitem__(self, method_name: str) -> Callable:
-        return self.items[method_name]
-
-
-def generate_request_handler(name: str, methods: ServerMethods) -> BaseHTTPRequestHandler:
+def generate_request_handler(
+        name: str, methods: ServerMethods) -> type[BaseHTTPRequestHandler]:
     """Build a handler to respond to HTTP POST requests containing JSON-RPC messages.
 
     Will call jsonrpcserver.dispatch to dispatch the request to the appropriate handler.
@@ -75,6 +37,10 @@ def generate_request_handler(name: str, methods: ServerMethods) -> BaseHTTPReque
 
     return type(
         f"{name}RequestHandler",
-        (BaseHTTPRequestHandler,),
-        {"allow_reuse_address": True, "do_POST": do_POST, "log_message": log_message},
+        (BaseHTTPRequestHandler, ),
+        {
+            "allow_reuse_address": True,
+            "do_POST": do_POST,
+            "log_message": log_message
+        },
     )

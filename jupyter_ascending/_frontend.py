@@ -3,10 +3,9 @@
 
 # Copyright (c) tjdevries.
 # Distributed under the terms of the Modified BSD License.
-
 """
 Information about the frontend package of the widgets.
 """
 
 module_name = "jupyter_ascending"
-module_version = "^0.1.0"
+module_version = "^0.1.28"

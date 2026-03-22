@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from loguru import logger
+from loguru import logger  # type: ignore
 
 from jupyter_ascending.json_requests import RestartRequest
 from jupyter_ascending.logger import setup_logger

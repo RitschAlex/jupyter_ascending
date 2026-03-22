@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 
-from loguru import logger
+from loguru import logger  # type: ignore
 
 from jupyter_ascending._environment import SYNC_EXTENSION
 from jupyter_ascending.json_requests import SyncRequest
@@ -20,7 +20,8 @@ def send(file_name: str):
     with open(file_name, "r") as reader:
         raw_result = reader.read()
 
-    request_obj = SyncRequest(file_name=file_name, contents=raw_result)
+    request_obj = SyncRequest(file_name=file_name,
+                              contents=raw_result)  # type: ignore
     request_notebook_command(request_obj)
 
     logger.info("... Complete")

@@ -1,15 +1,15 @@
 import time
 
-from loguru import logger
-
 import jupyter_ascending.handlers.server_extension
+
+from loguru import logger  # type: ignore
 from jupyter_ascending._environment import SYNC_EXTENSION
 from jupyter_ascending.handlers import jupyter_notebook
 from jupyter_ascending.logger import setup_logger
 from jupyter_ascending.utils import get_name_from_python
 
 
-@logger.catch
+@logger.catch()
 def load_ipython_extension(ipython):
     """This is the specially named function that Jupyter will call to load a notebook extension."""
     set_everything_up()
@@ -26,7 +26,9 @@ def set_everything_up():
     logger.info("IPYTHON: Loading {notebook}", notebook=notebook_name)
 
     if f".{SYNC_EXTENSION}.ipynb" not in notebook_name:
-        logger.info("IPYTHON: Not loading {notebook} because name does not match", notebook=notebook_name)
+        logger.info(
+            "IPYTHON: Not loading {notebook} because name does not match",
+            notebook=notebook_name)
         return
 
     logger.info("IPYTHON LOAD: " + time.ctime() + ": " + notebook_name)
@@ -34,9 +36,18 @@ def set_everything_up():
 
 
 def load_jupyter_server_extension(ipython):
-    """This is the specially named function that Jupyter will call to load a server extension."""
+    """This is the specially named function that Jupyter nbclassic will call to load a server extension."""
     setup_logger()
     ipython.log.info("LOADING JUPYTER ASCENDING SERVER PLUGIN")
     logger.info("SERVER LOAD: " + time.ctime())
 
     jupyter_ascending.handlers.server_extension.load_extension(ipython)
+
+
+def _load_jupyter_server_extension(server_app):
+    """This is the specially named function that Jupyter Server will call to load a server extension."""
+    setup_logger()
+    server_app.log.info("LOADING JUPYTER ASCENDING SERVER PLUGIN")
+    logger.info("SERVER LOAD: " + time.ctime())
+
+    jupyter_ascending.handlers.server_extension.load_extension(server_app)

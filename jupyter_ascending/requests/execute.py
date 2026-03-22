@@ -3,7 +3,7 @@ from functools import partial
 from pathlib import Path
 from typing import List
 
-from loguru import logger
+from loguru import logger  # type: ignore
 import jupytext
 
 from jupyter_ascending.json_requests import ExecuteRequest
@@ -19,23 +19,25 @@ def _find_cell_number(lines: List[str], line_number: int) -> int:
     """
     text = "\n".join(lines)
     conv = jupytext.jupytext.TextNotebookConverter(
-        jupytext.formats.divine_format(text), None
-    )
-    (metadata, _, _, pos,) = jupytext.header.header_to_metadata_and_cell(
+        jupytext.formats.divine_format(text), None)
+    (
+        metadata,
+        _,
+        _,
+        pos,
+    ) = jupytext.header.header_to_metadata_and_cell(
         lines,
         conv.implementation.header_prefix,
         conv.implementation.extension,
         conv.fmt.get(
             "root_level_metadata_as_raw_cell",
             conv.config.root_level_metadata_as_raw_cell
-            if conv.config is not None
-            else True,
+            if conv.config is not None else True,
         ),
     )
     conv.update_fmt_with_notebook_options(metadata, read=True)
     default_language = jupytext.languages.default_language_from_metadata_and_ext(
-        metadata, conv.implementation.extension
-    )
+        metadata, conv.implementation.extension)
 
     lines = lines[pos:]
     num_lines_read, cell_number = pos, 0
@@ -72,9 +74,9 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument("--filename", help="Filename to send")
-    parser.add_argument(
-        "--linenumber", type=int, help="Line number that the cursor is currently on"
-    )
+    parser.add_argument("--linenumber",
+                        type=int,
+                        help="Line number that the cursor is currently on")
 
     arguments = parser.parse_args()
 

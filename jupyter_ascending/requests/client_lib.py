@@ -1,11 +1,10 @@
 from typing import TypeVar
 
-import attr
+import attr  # type: ignore
 import requests
-from jsonrpcclient import Ok
-from jsonrpcclient import parse
-from jsonrpcclient import request
-from requests.exceptions import ConnectionError  # type: ignore
+
+from ..jsonrpc_utils import Ok
+from ..jsonrpc_utils import parse, request
 
 from jupyter_ascending._environment import EXECUTE_HOST_URL
 from jupyter_ascending.handlers.server_extension import perform_notebook_request
@@ -36,10 +35,13 @@ def request_notebook_command(json_request: GenericJsonRequest):
         result = parse(response.json())
 
         if not isinstance(result, Ok):
-            raise RequestFailure(f"JSONRPC request returned as failure: {result}")
+            raise RequestFailure(
+                f"JSONRPC request returned as failure: {result}")
 
-    except ConnectionError as e:
-        raise RequestFailure("Unable to connect to server. Perhaps notebook is not running?") from e
+    except requests.exceptions.ConnectionError as e:
+        raise RequestFailure(
+            "Unable to connect to server. Perhaps notebook is not running?"
+        ) from e
     except requests.exceptions.HTTPError as e:
         raise RequestFailure(
             "Unable to process request. Is jupyter-ascending installed in the server's python environment? Perhaps something else is running on this port?"
