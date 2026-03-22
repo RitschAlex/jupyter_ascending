@@ -1,10 +1,7 @@
 from typing import TypeVar
 
-import attr
+import attr  # type: ignore
 import requests
-# from jsonrpcclient import Ok
-# from jsonrpcclient import parse
-# from jsonrpcclient import request
 
 from ..jsonrpc_utils import Ok
 from ..jsonrpc_utils import parse, request

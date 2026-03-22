@@ -17,8 +17,6 @@ from typing import Type
 import jupytext  # type: ignore
 import requests  # type: ignore
 from ipykernel.comm import Comm  # type: ignore
-# from jsonrpcclient import request  # type: ignore
-# from jsonrpcserver import Success  # type: ignore
 from ..jsonrpc_utils import Success, Result
 from ..jsonrpc_utils import request
 from loguru import logger  # type: ignore

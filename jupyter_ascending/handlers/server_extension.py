@@ -78,7 +78,6 @@ async def register_notebook_server(notebook_path: str,
     _REGISTERED_SERVERS[notebook_path] = port_number
 
     logger.debug("Updated notebook mappings: {}", _REGISTERED_SERVERS)
-    print("Updated notebook mappings: {}", _REGISTERED_SERVERS)
     return Success()
 
 

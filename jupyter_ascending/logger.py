@@ -9,7 +9,6 @@ from jupyter_ascending._environment import SHOW_TO_STDOUT
 
 
 def setup_logger():
-    # log_file = os.path.join(tempfile.gettempdir(), "jupyter_ascending", "log.log")
     log_file = os.path.join(os.getcwd(), "jupyter_ascending.log")
     print(f"Logging Jupyter Ascending logs to {log_file}")
 
