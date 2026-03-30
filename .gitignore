@@ -165,3 +165,5 @@ example/
 .pnp.cjs
 .pnp.loader.mjs
 .vscode/*
+node_modules/
+tsconfig.tsbuildinfo

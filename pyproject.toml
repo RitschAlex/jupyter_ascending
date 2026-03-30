@@ -1,6 +1,8 @@
 [build-system]
 requires = [
   "hatchling>=1.5.0",
+  "jupyterlab>=4.5.0,<5",
+  "hatch-nodejs-version>=0.3.2"
 ]
 build-backend = "hatchling.build"
 
@@ -20,8 +22,6 @@ classifiers = [
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
-  "Programming Language :: Python :: 3.9",
-  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
@@ -42,11 +42,42 @@ dependencies = [
 "requests>=2.32.5"
 ]
 
+[tool.hatch.build.targets.sdist]
+artifacts = ["jupyter_ascending/labextension"]
+exclude = [".github", "binder"]
+
+[tool.hatch.build.targets.wheel.shared-data]
+"jupyter_ascending/labextension/dist" = "share/jupyter/labextensions/jupyter_ascending"
+"jupyter-config/server-config" = "etc/jupyter/jupyter_server_config.d"
+
 [tool.hatch.version]
 path = "jupyter_ascending/_version.py"
 
+
+[tool.hatch.build.hooks.jupyter-builder]
+dependencies = ["hatch-jupyter-builder>=0.8.2"]
+build-function = "hatch_jupyter_builder.npm_builder"
+ensured-targets = [
+  "jupyter_ascending/labextension/dist/package.json",
+]
+
+[tool.hatch.build.hooks.jupyter-builder.build-kwargs]
+build_cmd = "build:prod"
+npm = ["jlpm"]
+
+[tool.hatch.build.hooks.jupyter-builder.editable-build-kwargs]
+build_cmd = "install:extension"
+npm = ["jlpm"]
+source_dir = "src"
+build_dir = "jupyter_ascending/labextension/dist"
+
+[tool.jupyter-releaser.hooks]
+before-build-npm = [
+    "python -m pip install 'jupyterlab>=4.5.0,<5'",
+    "jlpm",
+    "jlpm clean",
+    "jlpm build:prod",
+]
+
 [tool.check-wheel-contents]
 ignore = ["W002", "W004"]
-
-[tool.poetry]
-package-mode = true
