@@ -2,7 +2,12 @@ import {
   JupyterFrontEnd,
   JupyterFrontEndPlugin
 } from '@jupyterlab/application';
-import { INotebookTracker, NotebookPanel } from '@jupyterlab/notebook';
+import {
+  INotebookTracker,
+  NotebookActions,
+  NotebookPanel
+} from '@jupyterlab/notebook';
+import { Cell } from '@jupyterlab/cells';
 import { Kernel } from '@jupyterlab/services';
 
 const IS_DEBUG = true;
@@ -24,6 +29,7 @@ const plugin: JupyterFrontEndPlugin<void> = {
         }
       });
 
+      // Handle kernel restarts or changes
       panel.sessionContext.kernelChanged.connect((sender, args) => {
         if (args.newValue) {
           console.log(
@@ -59,15 +65,45 @@ function setupComm(panel: NotebookPanel, kernel: Kernel.IKernelConnection) {
           console.log('Starting to sync notebook:', panel.context.path);
           start_sync_notebook(comm, data, panel);
           break;
-
+        case 'op_code__delete_cell':
+          op_code__delete_cell(panel, data);
+          break;
+        case 'op_code__insert_cell':
+          op_code__insert_cell(panel, data);
+          break;
+        case 'op_code__replace_cell':
+          op_code__replace_cell(panel, data);
+          break;
+        case 'update_cell_contents':
+          update_cell_contents(panel, data);
+          break;
+        case 'finish_merge':
+          comm.send({ command: 'merge_complete' });
+          break;
+        case 'restart_kernel':
+          kernel.restart();
+          break;
         default:
-          console.log(`Got an unhandled message (command: ${command}): `, msg);
+          console.log(`Got an unexpected message (command: ${command}): `, msg);
       }
     };
     comm.onClose = msg => {
       console.log('Comm closed', msg);
     };
   });
+}
+
+function get_cell_from_notebook(
+  panel: NotebookPanel,
+  cell_number: number
+): Cell {
+  const notebook = panel.content;
+  while (cell_number >= notebook.widgets.length) {
+    notebook.model?.sharedModel?.insertCell(notebook.widgets.length, {
+      cell_type: notebook.notebookConfig.defaultCell
+    });
+  }
+  return notebook.widgets[cell_number];
 }
 
 function get_cells_without_outputs(panel: NotebookPanel) {
@@ -83,6 +119,52 @@ function get_cells_without_outputs(panel: NotebookPanel) {
     cells_cloned.push(cellJSON);
   }
   return cells_cloned;
+}
+
+function update_cell_contents(panel: NotebookPanel, data: any) {
+  const notebook = panel.content;
+  const cell = get_cell_from_notebook(panel, data.cell_number);
+  // const sharedModel = panel.context.model.sharedModel;
+
+  cell.model.sharedModel.setSource(data.cell_contents);
+
+  if (cell.model.type !== data.cell_type) {
+    notebook.activeCellIndex = data.cell_number;
+    NotebookActions.changeCellType(notebook, data.cell_type);
+  }
+}
+
+function op_code__replace_cell(panel: NotebookPanel, data: any) {
+  console.log('Replacing cell...', data);
+  update_cell_contents(panel, data);
+}
+
+function op_code__insert_cell(panel: NotebookPanel, data: any) {
+  console.log('Inserting cell...', data);
+  const sharedModel = panel.context.model.sharedModel;
+
+  sharedModel.insertCell(data.cell_number, {
+    cell_type: data.cell_type,
+    source: data.cell_contents
+  });
+}
+
+function op_code__delete_cell(panel: NotebookPanel, data: any) {
+  console.log('Deleting cell...', data);
+  const sharedModel = panel.context.model.sharedModel;
+
+  // Sort descending to avoid messing up indices when deleting multiple cells
+  const indices_to_delete = (data.cell_indices as number[]).sort(
+    (a, b) => b - a
+  );
+
+  sharedModel.transact(() => {
+    for (const index of indices_to_delete) {
+      if (index < sharedModel.cells.length) {
+        sharedModel.deleteCell(index);
+      }
+    }
+  });
 }
 
 function start_sync_notebook(
