@@ -65,6 +65,20 @@ function setupComm(panel: NotebookPanel, kernel: Kernel.IKernelConnection) {
           console.log('Starting to sync notebook:', panel.context.path);
           start_sync_notebook(comm, data, panel);
           break;
+        case 'update':
+          update_cell_contents(panel, data);
+          break;
+        case 'execute':
+          execute_cell_contents(panel, data);
+          break;
+        case 'execute_all':
+          execute_all_cells(panel);
+          break;
+        case 'get_status':
+          console.log('Sending the status message from the backend');
+          get_status(panel, comm);
+        case 'status':
+          console.log('Status message from the backend');
         case 'op_code__delete_cell':
           op_code__delete_cell(panel, data);
           break;
@@ -91,6 +105,13 @@ function setupComm(panel: NotebookPanel, kernel: Kernel.IKernelConnection) {
       console.log('Comm closed', msg);
     };
   });
+}
+
+function get_status(panel: NotebookPanel, comm: Kernel.IComm) {
+  comm.send({
+    command: 'update_status',
+    status: get_cells_without_outputs(panel)
+  } as any);
 }
 
 function get_cell_from_notebook(
@@ -165,6 +186,17 @@ function op_code__delete_cell(panel: NotebookPanel, data: any) {
       }
     }
   });
+}
+
+function execute_cell_contents(panel: NotebookPanel, data: any) {
+  const notebook = panel.content;
+  const cell = get_cell_from_notebook(panel, data.cell_number);
+
+  NotebookActions.runCells(notebook, [cell], panel.sessionContext);
+}
+
+function execute_all_cells(panel: NotebookPanel) {
+  NotebookActions.runAll(panel.content, panel.sessionContext);
 }
 
 function start_sync_notebook(
