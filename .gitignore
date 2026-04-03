@@ -145,7 +145,7 @@ dmypy.json
 *.swp
 .DS_Store
 
-.yarn/cache/
+.yarn/*
 .vscode/*
 node_modules/
 tsconfig.tsbuildinfo
