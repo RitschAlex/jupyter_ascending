@@ -95,7 +95,19 @@ function setupComm(panel: NotebookPanel, kernel: Kernel.IKernelConnection) {
           comm.send({ command: 'merge_complete' });
           break;
         case 'restart_kernel':
-          kernel.restart();
+          console.log('Attempting to restart kernel...');
+          kernel
+            .restart()
+            .then(() => {
+              console.log('Kernel restarted successfully');
+              setTimeout(() => {
+                kernel.requestExecute({
+                  code: 'import jupyter_ascending.extension; jupyter_ascending.extension.set_everything_up()'
+                });
+                setupComm(panel, kernel);
+              }, 500);
+            })
+            .catch(err => console.error('Failed to restart kernel:', err));
           break;
         default:
           console.log(`Got an unexpected message (command: ${command}): `, msg);
