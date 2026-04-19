@@ -79,8 +79,8 @@ function setupComm(panel: NotebookPanel, kernel: Kernel.IKernelConnection) {
           get_status(panel, comm);
         case 'status':
           console.log('Status message from the backend');
-        case 'op_code__delete_cell':
-          op_code__delete_cell(panel, data);
+        case 'op_code__delete_cells':
+          op_code__delete_cells(panel, data);
           break;
         case 'op_code__insert_cell':
           op_code__insert_cell(panel, data);
@@ -182,7 +182,7 @@ function op_code__insert_cell(panel: NotebookPanel, data: any) {
   });
 }
 
-function op_code__delete_cell(panel: NotebookPanel, data: any) {
+function op_code__delete_cells(panel: NotebookPanel, data: any) {
   console.log('Deleting cell...', data);
   const sharedModel = panel.context.model.sharedModel;
 
