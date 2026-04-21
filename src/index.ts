@@ -99,13 +99,13 @@ function setupComm(panel: NotebookPanel, kernel: Kernel.IKernelConnection) {
           kernel
             .restart()
             .then(() => {
-              console.log('Kernel restarted successfully');
+              kernel.requestExecute({
+                code: 'import jupyter_ascending.extension; jupyter_ascending.extension.set_everything_up()'
+              });
               setTimeout(() => {
-                kernel.requestExecute({
-                  code: 'import jupyter_ascending.extension; jupyter_ascending.extension.set_everything_up()'
-                });
                 setupComm(panel, kernel);
-              }, 500);
+                console.log('Kernel restarted successfully');
+              }, 300);
             })
             .catch(err => console.error('Failed to restart kernel:', err));
           break;
@@ -200,15 +200,17 @@ function op_code__delete_cells(panel: NotebookPanel, data: any) {
   });
 }
 
-function execute_cell_contents(panel: NotebookPanel, data: any) {
+async function execute_cell_contents(panel: NotebookPanel, data: any) {
   const notebook = panel.content;
   const cell = get_cell_from_notebook(panel, data.cell_number);
 
-  NotebookActions.runCells(notebook, [cell], panel.sessionContext);
+  notebook.activeCellIndex = data.cell_number;
+  await NotebookActions.runCells(notebook, [cell], panel.sessionContext);
+  NotebookActions.focusActiveCell(notebook, { waitUntilReady: true });
 }
 
-function execute_all_cells(panel: NotebookPanel) {
-  NotebookActions.runAll(panel.content, panel.sessionContext);
+async function execute_all_cells(panel: NotebookPanel) {
+  await NotebookActions.runAll(panel.content, panel.sessionContext);
 }
 
 function start_sync_notebook(
