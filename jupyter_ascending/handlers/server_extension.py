@@ -104,7 +104,7 @@ Exception details:
         async with session.post(notebook_server, json=json) as response:
             response = parse(await response.json())
     if not isinstance(response, Ok):
-        message = "Got failed response from notebook: {response}"
+        message = f"Got failed response from notebook: {response}"
         logger.error(message)
         return Error(1, message)
     return Success()
