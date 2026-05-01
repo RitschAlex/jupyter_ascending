@@ -4,7 +4,6 @@ This file contains code for the JSON-RPC server we run alongside each .sync.ipyn
 It receives messages from `jupyter_server.py` and takes the appropriate action in the notebook.
 """
 import threading
-import time
 from http.server import HTTPServer
 from inspect import signature
 from pathlib import Path
@@ -40,12 +39,11 @@ from jupyter_ascending.utils import find_free_port
 
 COMM_NAME = "AUTO_SYNC::notebook"
 
+merge_complete = threading.Event()
+lock = threading.Lock()
+
 notebook_server_methods = ServerMethods("JupyterNotebook Start",
                                         "JupyterNotebook Close")
-
-merge_complete = False
-
-lock = threading.Lock()
 
 
 @logger.catch
@@ -122,8 +120,9 @@ def handle_execute_all_request(request_type: Type[ExecuteAllRequest],
     request = request_type(**data)
 
     # TODO: Remind myself why I don't need to say the filename here...
-    comm = make_comm()
-    execute_all_cells(comm)
+    with lock:
+        comm = make_comm()
+        execute_all_cells(comm)
 
     return f"Executing all cells in {request.file_name}"
 
@@ -131,14 +130,14 @@ def handle_execute_all_request(request_type: Type[ExecuteAllRequest],
 @dispatch_json_request
 def handle_sync_request(request_type: Type[SyncRequest], data: dict) -> str:
     """JSON-RPC request handler for 'sync'"""
-    global merge_complete
-    merge_complete = False
+
     request = request_type(**data)
 
     # We lock here because updating the notebook isn't threadsafe.
     # If we got two sync requests simultaneously without a lock,
     # bad things might happen (eg duplicated inserts/deletes).
     with lock:
+        merge_complete.clear()
         comm = make_comm()
 
         result = jupytext.reads(request.contents, fmt="py:percent")
@@ -192,7 +191,6 @@ def make_comm():
     """A comm is a Jupyter object for communicating between a notebook and kernel.
 
     Set up this object with event handlers."""
-    global merge_complete
 
     logger.info("IPYTHON: Registering Comms")
 
@@ -205,7 +203,6 @@ def make_comm():
 
     @jupyter_comm.on_msg
     def _recv(msg):
-        global merge_complete
         if _get_command(msg) == "merge_notebooks":
             logger.info("GOT UPDATE STATUS")
             merge_notebooks(jupyter_comm, msg["content"]["data"])
@@ -213,7 +210,7 @@ def make_comm():
 
         if _get_command(msg) == "merge_complete":
             logger.info("GOT MERGE COMPLETE")
-            merge_complete = True
+            merge_complete.set()
             return
 
         logger.info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -245,13 +242,8 @@ def update_cell_contents(comm: Comm, result: Dict[str, Any]) -> None:
 
     # Wait for the merge_complete flag to get set in the callback.
     # This way we don't release the lock before syncing is done.
-    for i in range(500):
-        if merge_complete:
-            return
-        time.sleep(0.01)
-    else:
+    if not merge_complete.wait(timeout=5.0):
         logger.warning("Timed out waiting for syncing to complete.")
-    # contents = NotebookContents(cells=result["cells"])
 
 
 def get_output_text(javascript_cell) -> Optional[str]:
