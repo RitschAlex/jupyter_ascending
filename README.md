@@ -16,6 +16,7 @@ was limited to Jupyter Notebook v6.x. This fork updates the codebase to keep the
 Jupyter Ascending lets you edit Jupyter notebooks from your favorite editor, then instantly sync and execute that code in the Jupyter notebook running in your browser. It's the best of both worlds--the autocomplete, keybindings, and refactoring tools you love in your favorite editor, plus the great visualization abilities of a Jupyter notebook. Combined with basic syncing of your code to a remote server, you can have all the power of a beefy dev-server with all the convenience of editing code locally.
 
 ## Installation
+This project currently supports **Python 3.11 and 3.12** (or lower). Support for Python 3.13+ is not yet available due to the [`editdistance`](https://pypi.org/project/editdistance/) dependency, which is no longer maintained and does not provide Python 3.13 wheels.
 
 ### Jupyter Notebook v7+
 
@@ -59,29 +60,43 @@ If your jupyter setup includes multiple python kernels that you'd like to use wi
 
 ### Quickstart
 
-1) `$ python -m jupyter_ascending.scripts.make_pair --base example`
+1. Create a synced pair of `.py` and `.ipynb` files:
 
-   This makes a pair of synced py and ipynb files, `example.sync.py` and `example.sync.ipynb`.
+   ```bash
+   python -m jupyter_ascending.scripts.make_pair --base example
+   ```
 
-2) Start jupyter and open the notebook: Currently Jupyter Ascending expects the jupyter server to be running at `localhost:8888/`
+   This creates `example.sync.py` and `example.sync.ipynb`.
 
-   `$ python -m jupyter notebook example.sync.ipynb`
+2. Start Jupyter and open the notebook:
 
-3) Add some code to the `.sync.py` file, e.g.
+   ```bash
+   python -m jupyter notebook example.sync.ipynb
+   ```
 
-   `$ echo 'print("Hello World!")' >> example.sync.py`
-   
-4) Sync the code into the jupyter notebook:
+   > **Note:** Jupyter Ascending expects the server to be running at `localhost:8888/`.
 
-   `$ python -m jupyter_ascending.requests.sync --filename example.sync.py`
-   
-5) Run that cell of code
+3. Edit `example.sync.py` in your editor and add some code, e.g.:
 
-   `$ python -m jupyter_ascending.requests.execute --filename example.sync.py --line 16`
+   ```python
+   print("Hello World!")
+   ```
 
+4. Sync the code into the notebook:
 
-When using `nbclassic` the jupyter server is exptected to be running at `localhost:8888/nbclassic`, f.e. `localhost:8888/nbclassic/notebooks/example.sync.ipynb`.
+   ```bash
+   python -m jupyter_ascending.requests.sync --filename example.sync.py
+   ```
 
+5. Execute a cell:
+
+   ```bash
+   python -m jupyter_ascending.requests.execute --filename example.sync.py --line 16
+   ```
+
+For `nbclassic`, the server is expected at `localhost:8888/nbclassic/` instead (e.g. `localhost:8888/nbclassic/notebooks/example.sync.ipynb`).
+
+### Editor integrations
 Set up one of the editor integrations to do all of this from within your favorite editor!
 - [Vim](https://github.com/untitled-ai/jupyter_ascending.vim)
 - [Nvim](https://github.com/RitschAlex/jupyter_ascending.nvim)
@@ -205,13 +220,7 @@ Config dir: /home/user/.pyenv/versions/3.12.0/envs/general/etc/jupyter
 
 Run tests from the root directory of this repository using `python -m pytest .`.
 
-Format files with `yapf`.
-
-### Pushing a new version to PyPI
-- Bump the version number in `pyproject.toml` and `_version.py`.
-- `poetry build`
-- `poetry publish`
-- `git tag VERSION` and `git push origin VERSION`
+Format files with `yapf` and `pep8` formatting.
 
 ### Updating dependencies
 - Dependency constraints are in `pyproject.toml`. These are the constraints that will be enforced when distributing the package to end users.
