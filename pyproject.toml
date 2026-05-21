@@ -16,7 +16,7 @@ description = "A Jupyter nbclassic extension for syncing notebooks with code fil
 readme = "README.md"
 version = "0.1.28"
 license = {file = "LICENSE"}
-requires-python = ">=3.11,<4.0"
+requires-python = ">=3.11,<3.13"
 classifiers = [
   "Framework :: Jupyter",
   "License :: OSI Approved :: BSD License",
@@ -24,7 +24,6 @@ classifiers = [
   "Programming Language :: Python :: 3 :: Only",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = [
