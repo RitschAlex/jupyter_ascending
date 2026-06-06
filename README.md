@@ -16,7 +16,7 @@ was limited to Jupyter Notebook v6.x. This fork updates the codebase to keep the
 Jupyter Ascending lets you edit Jupyter notebooks from your favorite editor, then instantly sync and execute that code in the Jupyter notebook running in your browser. It's the best of both worlds--the autocomplete, keybindings, and refactoring tools you love in your favorite editor, plus the great visualization abilities of a Jupyter notebook. Combined with basic syncing of your code to a remote server, you can have all the power of a beefy dev-server with all the convenience of editing code locally.
 
 ## Installation
-This project currently supports **Python 3.11 and 3.12** (or lower). Support for Python 3.13+ is not yet available due to the [`editdistance`](https://pypi.org/project/editdistance/) dependency, which is no longer maintained and does not provide Python 3.13 wheels.
+This project currently supports **Python 3.10 through 3.13**. 
 
 ### Jupyter Notebook v7+
 

@@ -9,27 +9,27 @@ build-backend = "hatchling.build"
 [project]
 name = "jupyter_ascending"
 authors = [
-  { name = "Josh Albrecht", email = "joshalbrecht@gmail.com" },
-  { name = "TJ DeVries", email ="devries.timothyj@gmail.com" }
+  {name = "Alex Ritsch", email = "ritschalexander@yahoo.com" }
 ]
 description = "A Jupyter nbclassic extension for syncing notebooks with code files."
 readme = "README.md"
 version = "0.1.28"
 license = {file = "LICENSE"}
-requires-python = ">=3.11,<3.13"
+requires-python = ">=3.10,<3.14"
 classifiers = [
   "Framework :: Jupyter",
   "License :: OSI Approved :: BSD License",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3 :: Only",
+  "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
   "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
 ]
 
 dependencies = [
 "jupytext>=1.14.4",
 "loguru>=0.7.3",
-"editdistance>=0.8.0",
 "jupyter-client>=8.6.0",
 "aiohttp>=3.9.5",
 "frozenlist>=1.4.1",
@@ -38,7 +38,8 @@ dependencies = [
 "notebook>=7,<8",
 "nbclassic>=1.1",
 "jupyter_server>=2.17",
-"requests>=2.32.5"
+"requests>=2.32.5",
+"Levenshtein>=0.27.2",
 ]
 
 [tool.hatch.build.targets.sdist]
