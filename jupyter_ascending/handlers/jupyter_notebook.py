@@ -3,6 +3,8 @@ This file contains code for the JSON-RPC server we run alongside each .sync.ipyn
 
 It receives messages from `jupyter_server.py` and takes the appropriate action in the notebook.
 """
+
+import queue
 import threading
 from http.server import HTTPServer
 from inspect import signature
@@ -45,39 +47,149 @@ lock = threading.Lock()
 notebook_server_methods = ServerMethods("JupyterNotebook Start",
                                         "JupyterNotebook Close")
 
+notebook_start_locks = {}
+notebook_start_locks_guard = threading.Lock()
+active_notebook_servers = {}
+
+
+class ReadyHTTPServer(HTTPServer):
+    """HTTPServer that sets a threading.Event when it is ready to accept requests."""
+
+    def __init__(self, server_address, request_handler, ready_event):
+        self.ready_event = ready_event
+        super().__init__(server_address, request_handler)
+
+    def serve_forever(self, poll_interval=0.5):
+        self.ready_event.set()  # Signal that the server is ready
+        return super().serve_forever(poll_interval)
+
+
+def _get_notebook_start_lock(notebook_path: Path):
+    with notebook_start_locks_guard:
+        lock_test = notebook_start_locks.get(notebook_path)
+        if lock_test is None:
+            lock_test = threading.Lock()
+            notebook_start_locks[notebook_path] = lock
+        return lock
+
+
+def _close_notebook_server(server, server_thread):
+    try:
+        if server_thread is not None and server_thread.is_alive():
+            server.shutdown()
+            server_thread.join()  # Wait for the server thread to finish
+    finally:
+        server.server_close()
+
 
 @logger.catch
-def start_notebook_server_in_thread(notebook_name: str, status_widget=None):
+def start_notebook_server_in_thread(notebook_name: str):
     """
     Args:
         notebook_name: The name of the notebook you want to be syncing in this process.
     """
 
+    logger.info("IPYTHON: Starting notebook server for {}...", notebook_name)
+    print("IPYTHON: Starting notebook server for {}...", notebook_name)
+
     notebook_path = Path(notebook_name).absolute()
+    start_lock = _get_notebook_start_lock(notebook_path)
 
-    # TODO: This might be a race condition if a bunch of these started at once...
-    notebook_server_port = find_free_port()
+    with start_lock:
+        existing = active_notebook_servers.get(notebook_path)
+        if existing is not None:
+            existing_server, existing_thread = existing
 
-    notebook_executor = HTTPServer(
-        ("localhost", notebook_server_port),
-        NotebookKernelRequestHandler,
-    )
-    notebook_executor_thread = threading.Thread(
-        target=notebook_executor.serve_forever)
-    notebook_executor_thread.start()
+            if existing_thread.is_alive():
+                logger.info(
+                    "IPYTHON: Notebook server for {} is already running.",
+                    notebook_path)
+                return
 
-    logger.info("IPYTHON: Registering notebook {}", notebook_path)
-    print("IPYTHON: Registering notebook {}", notebook_path)
-    json = request(
-        register_notebook_server.__name__,
-        params=dict(
-            notebook_path=str(notebook_path),
-            port_number=notebook_server_port,
-        ),
-    )
+            # The old serving thread exited, so discard its stale state.
+            active_notebook_servers.pop(notebook_path, None)
+            existing_server.server_close()
 
-    requests.post(EXECUTE_HOST_URL, json=json)
-    logger.info("==> Success")
+        ready_event = threading.Event()
+        serve_errors = queue.Queue(maxsize=1)
+
+        notebook_executor = ReadyHTTPServer(
+            ("localhost", 0), NotebookKernelRequestHandler, ready_event)
+        notebook_server_port = notebook_executor.server_address[1]
+
+        def serve():
+            try:
+                notebook_executor.serve_forever()
+            except BaseException as e:
+                serve_errors.put(e)
+                ready_event.set()
+                raise
+
+        notebook_executor_thread = threading.Thread(
+            target=serve, name=f"notebook-server-{notebook_path.name}")
+
+        try:
+            notebook_executor_thread.start()
+
+            # Registration of the notebook server with the main server should happen
+            # after the server is ready to accept requests.
+            ready_event.wait()
+
+            try:
+                serve_error = serve_errors.get_nowait()
+            except queue.Empty:
+                serve_error = None
+
+            if serve_error is not None:
+                raise serve_error
+
+            server_state = (notebook_executor, notebook_executor_thread)
+
+            logger.info("IPYTHON: Notebook server for {} started on port {}.",
+                        notebook_path, notebook_server_port)
+            print(
+                f"IPYTHON: Notebook server for {notebook_path} started on port {notebook_server_port}."
+            )
+
+            registration_json = request(register_notebook_server.__name__,
+                                        params={
+                                            "notebook_path":
+                                            str(notebook_path),
+                                            "port_number": notebook_server_port
+                                        })
+
+            logger.info(
+                "Registering notebook path={!r}, port={}, url={!r}",
+                str(notebook_path),
+                notebook_server_port,
+                EXECUTE_HOST_URL,
+            )
+
+            response = requests.post(
+                EXECUTE_HOST_URL,
+                json=registration_json,
+                timeout=10,
+            )
+
+            logger.info(
+                "Registration response: status={}, body={!r}",
+                response.status_code,
+                response.text,
+            )
+
+            response.raise_for_status()
+
+            logger.info("==> Success")
+
+            active_notebook_servers[notebook_path] = server_state
+
+        except BaseException:
+            state = active_notebook_servers.get(notebook_path)
+            if state is not None and state[0] is notebook_executor:
+                active_notebook_servers.pop(notebook_path, None)
+
+            _close_notebook_server(notebook_executor, notebook_executor_thread)
+            raise
 
 
 def dispatch_json_request(f):
