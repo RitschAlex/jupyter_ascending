@@ -149,3 +149,5 @@ dmypy.json
 .vscode/*
 node_modules/
 tsconfig.tsbuildinfo
+jupyter_ascending/nbextension/static/index.js
+jupyter_ascending/nbextension/static/index.js.map

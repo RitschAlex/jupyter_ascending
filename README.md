@@ -21,24 +21,23 @@ This project currently supports **Python 3.10 through 3.13**.
 ### Jupyter Notebook v7+
 
 ```
-$ pip install git+https://github.com/RitschAlex/jupyter_ascending.git && \
-$ python -m jupyter server extension enable jupyter_ascending
+pip install git+https://github.com/RitschAlex/jupyter_ascending.git && \
+python -m jupyter server extension enable jupyter_ascending
 ```
 
 ### JupyterLab
 
 ```
-$ pip install git+https://github.com/RitschAlex/jupyter_ascending.git && \
-$ python -m jupyter server extension enable jupyter_ascending
+pip install git+https://github.com/RitschAlex/jupyter_ascending.git && \
+python -m jupyter server extension enable jupyter_ascending
 ```
 
 ### Jupyter nbclassic
 
 ```
-$ pip install git+https://github.com/RitschAlex/jupyter_ascending.git && \
-$ python -m jupyter nbclassic-extension    install jupyter_ascending --sys-prefix --py && \
-$ python -m jupyter nbclassic-extension     enable jupyter_ascending --sys-prefix --py && \
-$ python -m jupyter nbclassic-serverextension enable jupyter_ascending --sys-prefix --py
+pip install git+https://github.com/RitschAlex/jupyter_ascending.git && \
+python -m jupyter nbclassic-extension    install jupyter_ascending --sys-prefix --py && \
+python -m jupyter nbclassic-extension     enable jupyter_ascending --sys-prefix --py && \
 ```
 
 > **Note:** JupyterLab and Jupyter Notebook v7+ share the same `jupyter-server` backend, so the installation is identical. The labextension is automatically included with the pip install.
@@ -47,11 +46,11 @@ You can confirm it's installed by checking for `jupyter_ascending` in:
 
 ```
 # JupyterLab and Jupyter Notebook v7+
-$ python -m jupyter server extension list
+python -m jupyter server extension list
 
 # Jupyter nblcassic
-$ python -m jupyter nbclassic-extension list
-$ python -m jupyter nbclassic-serverextension list
+python -m jupyter nbclassic-extension list
+python -m jupyter nbclassic-serverextension list
 ```
 
 If your jupyter setup includes multiple python kernels that you'd like to use with jupyter ascending, you'll need to complete this setup in each of those python environments separately.
@@ -153,45 +152,44 @@ Install poetry system-wide (not the python package!)
 (https://python-poetry.org/docs/#installation)
 
 Install dependencies (will install from the lock file, see below if you need to update the lockfile)
-$ poetry install
+poetry install
 
 Activate the Poetry env
-$ poetry shell
+poetry shell
 
 Build the labextension (required for all platforms)
-$ jlpm install
-$ jlpm build:prod
+jlpm install
+jlpm build:prod
 ```
 ### Jupyter Notebook nbclassic
 
 Installs the extension, using symlinks
 ```
-$ python -m jupyter nbclassic-extension install --py --sys-prefix --symlink jupyter_ascending
+python -m jupyter nbclassic-extension install --py --sys-prefix --symlink jupyter_ascending
 
 # Enables them, so it auto loads
-$ python -m jupyter nbclassic-extension enable jupyter_ascending --py --sys-prefix
-$ python -m jupyter nbclassic-serverextension enable jupyter_ascending --sys-prefix --py
+python -m jupyter nbclassic-extension enable jupyter_ascending --py --sys-prefix
 ```
 
 ### Jupyter Notebook v7+
 
 Enable the server extension
 ``` 
-$ python -m jupyter server extension enable jupyter_ascending --sys-prefix --py
+python -m jupyter server extension enable jupyter_ascending --sys-prefix --py
 ```
 ### JupyterLab
 
 Enable the Server extension
 ```
-$ python -m jupyter server extension enable jupyter_ascending --sys-prefix --py
+python -m jupyter server extension enable jupyter_ascending --sys-prefix --py
 
 # Install the labextension in development mode
-$ jupyter labextension develop . --overwrite
+jupyter labextension develop . --overwrite
 ```
 
 To check that they are enabled, do something like this:
 ```
-$ python -m jupyter nbclassic-extension list
+python -m jupyter nbclassic-extension list
 Known nbextensions:
   config dir: /home/user/.pyenv/versions/3.12.0/envs/general/etc/jupyter/nbconfig
     notebook section
@@ -202,7 +200,7 @@ Known nbextensions:
       jupyter_ascending/extension  enabled
       - Validating: OK
 
-$ python -m jupyter nbclassic-serverextension list
+python -m jupyter nbclassic-serverextension list
 config dir: /home/user/.pyenv/versions/3.12.0/envs/general/etc/jupyter
     jupytext  enabled
     - Validating...
@@ -211,7 +209,7 @@ config dir: /home/user/.pyenv/versions/3.12.0/envs/general/etc/jupyter
     - Validating...
       jupyter_ascending 0.1.28 OK
 
-$ python -m jupyter server extension list
+python -m jupyter server extension list
 Config dir: /home/user/.pyenv/versions/3.12.0/envs/general/etc/jupyter
     jupyter_ascending enabled
     - Validating jupyter_ascending...
