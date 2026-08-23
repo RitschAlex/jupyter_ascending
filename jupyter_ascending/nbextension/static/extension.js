@@ -19,10 +19,6 @@ define(["base/js/namespace"], function (Jupyter) {
         return Jupyter.notebook.notebook_path;
     }
 
-    function is_synced_notebook() {
-        return get_notebook_name().includes(".sync.ipynb");
-    }
-
     function get_cell_from_notebook(cell_number) {
         let cell = Jupyter.notebook.get_cell(cell_number);
 
@@ -210,7 +206,6 @@ define(["base/js/namespace"], function (Jupyter) {
                     // console.log(ascend);
                     console.log("Loading Jupyter Ascending extension...");
                     console.log("Opening... ", get_notebook_name());
-                    console.log("Is synced: ", is_synced_notebook());
 
                     console.log("Attemping create comm...");
                     if (Jupyter.notebook.kernel) {
@@ -219,7 +214,7 @@ define(["base/js/namespace"], function (Jupyter) {
                         Jupyter.notebook.events.one(
                             "kernel_ready.Kernel",
                             () => {
-                                console.log("We actually reloaded!");
+                                // console.log("We actually reloaded!");
                                 create_and_register_comm();
                             }
                         );
