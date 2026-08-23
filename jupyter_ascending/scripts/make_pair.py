@@ -1,5 +1,5 @@
 """
-Make a pair of empty .sync.py and .sync.ipynb files.
+Make a pair of empty .<SYNC_EXTENSION>.py and .<SYNC_EXTENSION>.ipynb files.
 """
 import argparse
 from pathlib import Path
@@ -15,7 +15,7 @@ _STARTER_CONTENTS = """# ---
 #       extension: .py
 #       format_name: percent
 #       format_version: '1.3'
-#       jupytext_version: 1.3.4
+#       jupytext_version: 1.19.5
 #   kernelspec:
 #     display_name: Python 3
 #     language: python
@@ -27,23 +27,30 @@ _STARTER_CONTENTS = """# ---
 
 
 def create_new_file(base: str, force: bool):
+    sync_extension = SYNC_EXTENSION
     assert not base.endswith(".py"), "base: Cannot end with '.py'"
     assert not base.endswith(
-        f".{SYNC_EXTENSION}.py"
-    ), f"base: Cannot end with '{SYNC_EXTENSION}.py' -- we're adding that!"
+        f".{sync_extension}.py"
+    ), f"base: Cannot end with '{sync_extension}.py' -- we're adding that!"
     assert not base.endswith(".ipynb"), "base: Cannot end with '.ipynb'"
-    assert not base.endswith(f".{SYNC_EXTENSION}.ipynb"), "base: Cannot end with '.ipynb' -- we're adding that!"
-    assert not base.endswith(f".{SYNC_EXTENSION}"), f"we're going to add '.{SYNC_EXTENSION}'"
+    assert not base.endswith(
+        f".{sync_extension}.ipynb"
+    ), "base: Cannot end with '.ipynb' -- we're adding that!"
+    assert not base.endswith(
+        f".{sync_extension}"), f"we're going to add '.{sync_extension}'"
 
-    py_path = base + f".{SYNC_EXTENSION}.py"
-    ipynb_path = base + f".{SYNC_EXTENSION}.ipynb"
+    py_path = base + f".{sync_extension}.py"
+    ipynb_path = base + f".{sync_extension}.ipynb"
 
     if not force and Path(py_path).exists():
-        print(f"Path '{py_path}' already exists. Call with --force to override.")
+        print(
+            f"Path '{py_path}' already exists. Call with --force to override.")
         return
 
     if not force and Path(ipynb_path).exists():
-        print(f"Path '{ipynb_path}' already exists. Call with --force to override.")
+        print(
+            f"Path '{ipynb_path}' already exists. Call with --force to override."
+        )
         return
 
     with open(py_path, "w") as f:
@@ -52,15 +59,23 @@ def create_new_file(base: str, force: bool):
 
     print("Writing :", ipynb_path)
     jupytext.write(jupytext.reads(_STARTER_CONTENTS, "py:percent"), ipynb_path)
-    # with open(ipynb_path, "w") as f:
 
     print("Success!")
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("--base", help="Base filename to add (do not include .py or .ipynb)", required=True)
-    parser.add_argument("-f", "--force", help="Override existing files if passed.", default=False, action="store_true")
+    parser.add_argument(
+        "--base",
+        help="Base filename to add (do not include .py or .ipynb)",
+        required=True)
+    parser.add_argument("-f",
+                        "--force",
+                        help="Override existing files if passed.",
+                        default=False,
+                        action="store_true",
+                        required=False)
 
     arguments = parser.parse_args()
+
     create_new_file(arguments.base, arguments.force)

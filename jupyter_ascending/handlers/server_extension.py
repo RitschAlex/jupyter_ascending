@@ -92,7 +92,7 @@ async def perform_notebook_request(notebook_path: str, command_name: str,
     except UnableToFindNotebookException as e:
         message = f"""\
 Unable to find a paired notebook for {notebook_path} in registered notebooks: {_REGISTERED_SERVERS}.
-Either a properly named notebook (ending in .sync.ipynb) is not running, or it didn't register properly for some reason.
+Either a properly named notebook (ending in .{SYNC_EXTENSION}.ipynb) is not running, or it didn't register properly for some reason.
 
 Exception details:
 {e}"""

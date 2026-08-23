@@ -12,6 +12,9 @@ from jupyter_ascending.requests.client_lib import request_notebook_command
 @logger.catch
 def send(file_name: str):
     if f".{SYNC_EXTENSION}.py" not in file_name:
+        logger.info(
+            f"Filename {file_name} does not end with .{SYNC_EXTENSION}.py, skipping sync"
+        )
         return
 
     logger.info(f"Syncing File: {file_name}...")

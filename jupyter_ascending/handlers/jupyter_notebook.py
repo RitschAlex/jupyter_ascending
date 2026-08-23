@@ -1,5 +1,5 @@
 """
-This file contains code for the JSON-RPC server we run alongside each .sync.ipynb notebook.
+This file contains code for the JSON-RPC server we run alongside each .{SYNC_EXTENSION}.ipynb notebook.
 
 It receives messages from `jupyter_server.py` and takes the appropriate action in the notebook.
 """
