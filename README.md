@@ -109,6 +109,18 @@ Currently Jupyter Ascending expects the jupyter server to be running at `localho
 
 By default the Jupyter server will search for a free port starting at 8888. If 8888 is unavailable and it selects eg 8889, Jupyter Ascending won't work - as it's expecting to connect to 8888. To force Jupyter to use a specific port, start your jupyter notebook with `JUPYTER_PORT=8888 JUPYTER_PORT_RETRIES=0 jupyter notebook` (or whatever port you want, setting also `JUPYTER_ASCENDING_EXECUTE_PORT` appropriately).
 
+### Customizing the sync file extension
+
+By default, Jupyter Ascending pairs `*.sync.py` and `*.sync.ipynb` files. You can replace the `sync` part with your own token by setting the `JUPYTER_ASCENDING_SYNC_EXTENSION` environment variable, e.g.:
+
+```
+JUPYTER_ASCENDING_SYNC_EXTENSION=notes jupyter notebook
+```
+
+The value may only contain letters, digits, underscores, and hyphens. Invalid values log a warning and fall back to `sync`. `make_pair` picks this value up automatically when creating new pairs.
+
+As with `JUPYTER_ASCENDING_EXECUTE_HOST`/`JUPYTER_ASCENDING_EXECUTE_PORT`, this variable must be set in **both** environments: where you start the jupyter server and where you run the client (ie in your editor). If they differ, one side won't recognize the paired files and syncing won't work.
+
 ### Working on a remote server
 
 Jupyter Ascending doesn't know or care if the editor and the jupyter server are on the same machine. The client is just sending requests to `http://[jupyter_server_url]:[jupyter_server_port]/jupyter_ascending`, with the default set to `http://localhost:8888/jupyter_ascending`. We typically use SSH to forward the local jupyter port into the remote server, but you can set up the networking however you like, and use the environment variables to tell the client where to look for the Jupyter server.
