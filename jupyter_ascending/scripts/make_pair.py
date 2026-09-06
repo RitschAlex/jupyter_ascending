@@ -7,23 +7,9 @@ from pathlib import Path
 import jupytext
 
 from jupyter_ascending._environment import SYNC_EXTENSION
+from jupyter_ascending.scripts._metadata import METADATA_HEADER
 
-_STARTER_CONTENTS = """# ---
-# jupyter:
-#   jupytext:
-#     text_representation:
-#       extension: .py
-#       format_name: percent
-#       format_version: '1.3'
-#       jupytext_version: 1.19.5
-#   kernelspec:
-#     display_name: Python 3
-#     language: python
-#     name: python3
-# ---
-
-# %%
-"""
+_STARTER_CONTENTS = METADATA_HEADER + "\n# %%\n"
 
 
 def create_new_file(base: str, force: bool):
