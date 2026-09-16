@@ -54,7 +54,7 @@ def test_convert_to_py_no_sync_keeps_filename(tmp_path):
 
 
 def test_convert_to_py_already_paired_ipynb(tmp_path):
-    ipynb_path = tmp_path / "example.ipynb"
+    ipynb_path = tmp_path / "example.sync.ipynb"
     _write_ipynb_file(ipynb_path, SOURCE)
     convert_to_py(str(ipynb_path), True, False)
 
@@ -79,7 +79,7 @@ def test_convert_to_py_existing_output_with_force(tmp_path):
     _write_ipynb_file(ipynb_path, SOURCE)
     output_path = tmp_path / "example.sync.py"
     output_path.write_text("SENTINEL = 1\n")
-    convert_to_py(str(ipynb_path), True, False)
+    convert_to_py(str(ipynb_path), True, True)
 
     assert not ipynb_path.exists()
     assert (tmp_path / "example.sync.ipynb").exists()
@@ -90,7 +90,7 @@ def test_convert_to_py_existing_output_with_force(tmp_path):
 
 def test_convert_to_py_custom_sync_extension(tmp_path, monkeypatch):
     monkeypatch.setattr("jupyter_ascending.scripts.to_py.SYNC_EXTENSION",
-                        ".custom")
+                        "custom")
     ipynb_path = tmp_path / "example.ipynb"
     _write_ipynb_file(ipynb_path, SOURCE)
     convert_to_py(str(ipynb_path), True, False)
