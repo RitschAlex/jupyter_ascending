@@ -90,7 +90,7 @@ If your jupyter setup includes multiple python kernels that you'd like to use wi
 5. Execute a cell:
 
    ```bash
-   python -m jupyter_ascending.requests.execute --filename example.sync.py --line 16
+   python -m jupyter_ascending.requests.execute --filename example.sync.py --linenumber 16
    ```
 
 For `nbclassic`, the server is expected at `localhost:8888/nbclassic/` instead (e.g. `localhost:8888/nbclassic/notebooks/example.sync.ipynb`).
@@ -99,9 +99,6 @@ For `nbclassic`, the server is expected at `localhost:8888/nbclassic/` instead (
 Set up one of the editor integrations to do all of this from within your favorite editor!
 - [Vim](https://github.com/untitled-ai/jupyter_ascending.vim)
 - [Nvim](https://github.com/RitschAlex/jupyter_ascending.nvim)
-- [Visual Studio Code](docs/VSCODE.md)
-- [PyCharm](docs/PYCHARM.md)
-- [Other editors](docs/OTHER_EDITORS.md)
 
 ### Working with multiple jupyter servers or alternate ports
 
@@ -146,14 +143,27 @@ Hopefully we can add proper authentication in the future. Contributions are welc
 
 ## How it works
 
-- Your editor calls the jupyter ascending client library with one of a few commands:
-  - Sync the code to the notebook (typically on save)
-  - Run a cell / run all cells / other commands that should be mapped to a keyboard shortcut
-- The client library assembles a HTTP POST request and sends it to the jupyter server
-- There is a jupyter server extension which accepts HTTP POST requests at `http://[jupyter_server_url]:[jupyter_server_port]/jupyter_ascending`.
-- The server extension matches the request filename to the proper running notebooks and forwards the command along to the notebook plugin
-- A notebook plugin receives the command, and updates the contents of the notebook or executes the requested command.
-- The notebook plugin consists of two parts - one part executes within the python process of the notebook kernel, and the other executes in javascript in the notebook's browser window. the part in python launches a little webserver in a thread, which is how it receives messages the server extension. When the webserver thread starts up, it sends a message to the server extension to "register" itself so the server extension knows where to send commands for that notebook.
+You edit a paired `.sync.py` file in your editor. Client scripts send HTTP requests to the jupyter server extension at `http://localhost:8888/jupyter_ascending`, which matches the file to its running notebook and forwards the command to the notebook plugin for execution.
+
+### Scripts
+
+File management:
+
+| Command | Description |
+|---|---|
+| `python -m jupyter_ascending.scripts.make_pair --base example` | Create empty `example.sync.py` and `example.sync.ipynb` pair (`--force` overrides) |
+| `python -m jupyter_ascending.scripts.to_ipynb example.py` | Convert `.py` to a paired `.ipynb` notebook (`--no-sync` keeps the original filename, `--force` overrides) |
+| `python -m jupyter_ascending.scripts.to_py example.ipynb` | Convert `.ipynb` to a paired `.py` script (`--no-sync`, `--force` as above) |
+
+Notebook commands:
+
+| Command | Description |
+|---|---|
+| `python -m jupyter_ascending.requests.sync --filename example.sync.py` | Sync the `.py` contents into the notebook |
+| `python -m jupyter_ascending.requests.execute --filename example.sync.py --linenumber 16` | Sync, then execute the cell containing the given line |
+| `python -m jupyter_ascending.requests.execute_all --filename example.sync.py` | Sync, then execute all cells |
+| `python -m jupyter_ascending.requests.restart --filename example.sync.py` | Restart the notebook kernel |
+| `python -m jupyter_ascending.requests.get_status --filename example.sync.py` | Query the notebook status |
 
 ## Local development
 
