@@ -28,7 +28,7 @@ classifiers = [
 ]
 
 dependencies = [
-"jupytext>=1.14.4",
+"jupytext>=1.19.0",
 "loguru>=0.7.3",
 "jupyter-client>=8.6.0",
 "aiohttp>=3.9.5",
