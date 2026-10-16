@@ -32,6 +32,7 @@ from jupyter_ascending.json_requests import ExecuteRequest
 from jupyter_ascending.json_requests import FocusCellRequest
 from jupyter_ascending.json_requests import GetStatusRequest
 from jupyter_ascending.json_requests import RestartRequest
+from jupyter_ascending.json_requests import InterruptRequest
 from jupyter_ascending.json_requests import SyncRequest
 from jupyter_ascending.notebook.data_types import JupyterCell
 from jupyter_ascending.notebook.data_types import NotebookContents
@@ -292,6 +293,19 @@ def handle_restart_request(request_type: Type[RestartRequest],
     logger.info("Sent restart_kernel")
 
     return f"Restarting kernel in {request.file_name}"
+
+
+@dispatch_json_request
+def handle_interrupt_request(request_type: Type[InterruptRequest],
+                             data: dict) -> str:
+    """JSON-RPC request handler for 'interrupt'"""
+    request = request_type(**data)
+
+    comm = make_comm()
+    comm.send({"command": "interrupt_kernel"})
+    logger.info("Sent interrupt_kernel")
+
+    return f"Interrupting kernel in {request.file_name}"
 
 
 NotebookKernelRequestHandler = generate_request_handler(

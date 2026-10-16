@@ -109,6 +109,13 @@ function setupComm(panel: NotebookPanel, kernel: Kernel.IKernelConnection) {
             })
             .catch(err => console.error('Failed to restart kernel:', err));
           break;
+        case 'interrupt_kernel':
+          console.log('Attempting to interrupt kernel...');
+          kernel
+            .interrupt()
+            .then(() => console.log('Kernel interrupted successfully'))
+            .catch(err => console.error('Failed to interrupt kernel:', err));
+          break;
         default:
           console.log(`Got an unexpected message (command: ${command}): `, msg);
       }
