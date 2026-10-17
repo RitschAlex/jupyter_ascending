@@ -29,6 +29,11 @@ class RestartRequest(JsonBaseRequest):
 
 
 @dataclass
+class InterruptRequest(JsonBaseRequest):
+    pass
+
+
+@dataclass
 class SyncRequest(JsonBaseRequest):
     contents: str
 

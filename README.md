@@ -162,6 +162,7 @@ Notebook commands:
 | `python -m jupyter_ascending.requests.sync --filename example.sync.py` | Sync the `.py` contents into the notebook |
 | `python -m jupyter_ascending.requests.execute --filename example.sync.py --linenumber 16` | Sync, then execute the cell containing the given line |
 | `python -m jupyter_ascending.requests.execute_all --filename example.sync.py` | Sync, then execute all cells |
+| `python -m jupyter_ascending.requests.interrupt --filename example.sync.py` | Interrupt the notebook kernel (Jupyter Notebook v7+ and JupyterLab only) |
 | `python -m jupyter_ascending.requests.restart --filename example.sync.py` | Restart the notebook kernel |
 | `python -m jupyter_ascending.requests.get_status --filename example.sync.py` | Query the notebook status |
 
