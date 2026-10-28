@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, Union
 
 import attr  # type: ignore
 import time
@@ -35,7 +35,7 @@ def request_notebook_command(json_request: GenericJsonRequest,
         ),
     )
 
-    error: Exception | None = None
+    error: Union[Exception, None] = None
 
     for attempt in range(max_tries + 1):
         try:
