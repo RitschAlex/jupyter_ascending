@@ -3,8 +3,8 @@ from typing import Any
 from typing import Dict
 from typing import Optional
 
-from loguru import logger  # type: ignore
-from aiohttp import ClientSession  # type: ignore
+from loguru import logger
+from aiohttp import ClientSession
 
 from ..jsonrpc_utils import parse, request, method
 from ..jsonrpc_utils import async_dispatch as dispatch
