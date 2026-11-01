@@ -17,11 +17,11 @@ from pathlib import Path
 from inspect import signature
 from http.server import HTTPServer
 
-import jupytext  # type: ignore
-import requests  # type: ignore
+import jupytext
+import requests
 
-from ipykernel.comm import Comm  # type: ignore
-from loguru import logger  # type: ignore
+from ipykernel.comm import Comm
+from loguru import logger
 
 from jupyter_ascending._environment import EXECUTE_HOST_URL
 from jupyter_ascending.handlers import ServerMethods
@@ -48,8 +48,7 @@ COMM_NAME = "AUTO_SYNC::notebook"
 _merge_complete_event = threading.Event()
 _merge_lock = threading.Lock()
 
-_notebook_server_methods = ServerMethods("JupyterNotebook Start",
-                                         "JupyterNotebook Close")
+_notebook_server_methods = ServerMethods()
 
 _notebook_start_locks = {}
 _notebook_start_locks_guard = threading.Lock()

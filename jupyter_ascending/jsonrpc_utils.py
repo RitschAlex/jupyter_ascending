@@ -1,47 +1,8 @@
-import json
 import uuid
+import orjson as json
 
-from loguru import logger  # type: ignore
-from functools import wraps
-from typing import Any, Callable, Optional
-
-
-def _wrap_request(f: Callable, start_msg: str, close_msg: str):
-
-    @wraps(f)
-    @logger.catch
-    def wrapper(*args, **kwargs):
-        logger.debug("{}: {}", start_msg, f.__name__)
-        result = f(*args, **kwargs)
-        logger.debug("{}: {}", close_msg, result)
-        return result
-
-    return wrapper
-
-
-class ServerMethods:
-    """
-    Wrapper to make some things a bit nicer around jsonrpcserver.methods.Methods
-
-    Basically our own version of jsonrpcserver.methods.Methods, wrapping each method with auto
-    logging and error catching so that you don't have to remember to do that.
-    """
-
-    def __init__(self, start_msg: str, close_msg: str):
-        self.items = {}
-        self.start_msg = start_msg
-        self.close_msg = close_msg
-
-    def add(self, f: Callable) -> Callable:
-        self.items[f.__name__] = f
-
-        return _wrap_request(f, self.start_msg, self.close_msg)
-
-    def __getitem__(self, method_name: str) -> Callable:
-        return self.items[method_name]
-
-    def __contains__(self, method_name: str) -> bool:
-        return method_name in self.items
+from typing import Any, Callable, Optional, Union
+from loguru import logger
 
 
 class Result:
@@ -62,18 +23,51 @@ class Error(Result):
         self.data = data
 
 
-_methods = ServerMethods("JSON-RPC start", "JSON-RPC end")
+class JsonRpcError:
+
+    def __init__(self, code: int, message: str, data: Any, id: Any):
+        self.code = code
+        self.message = message
+        self.data = data
+        self.id = id
+
+
+class Ok:
+
+    def __init__(self, result: Any, id: Any):
+        self.result = result
+        self.id = id
+
+
+class ServerMethods:
+    """
+    Wrapper to make some things a bit nicer around jsonrpcserver.methods.Methods
+    """
+
+    def __init__(self):
+        self.items = {}
+
+    def add(self, f: Callable) -> Callable:
+        self.items[f.__name__] = f
+        return f
+
+    def __getitem__(self, method_name: str) -> Callable:
+        return self.items[method_name]
+
+    def __contains__(self, method_name: str) -> bool:
+        return method_name in self.items
+
+
+_default_methods = ServerMethods()
 
 
 def method(func: Callable) -> Callable:
     """Decorator to register a function as a JSON-RPC method."""
-    # _methods[func.__name__] = func
-    _methods.add(func)
-    return func
+    return _default_methods.add(func)
 
 
 def dispatch(request_str: str, methods: Optional[ServerMethods] = None) -> str:
-    method_dict = methods if methods is not None else _methods
+    method_dict = methods if methods is not None else _default_methods
 
     try:
         req = json.loads(request_str)
@@ -85,7 +79,7 @@ def dispatch(request_str: str, methods: Optional[ServerMethods] = None) -> str:
                 "message": "Parse error"
             },
             "id": None
-        })
+        }).decode("utf-8")
 
     if not isinstance(req, dict):
         return json.dumps({
@@ -95,7 +89,7 @@ def dispatch(request_str: str, methods: Optional[ServerMethods] = None) -> str:
                 "message": "Invalid Request"
             },
             "id": None
-        })
+        }).decode("utf-8")
 
     req_id = req.get("id")
     method_name = req.get("method")
@@ -109,10 +103,12 @@ def dispatch(request_str: str, methods: Optional[ServerMethods] = None) -> str:
             },
             "id": req_id
         }
-        return json.dumps(err_response)
+        return json.dumps(err_response).decode("utf-8")
 
     func = method_dict[method_name]
     params = req.get("params", [])
+    if params is None:
+        params = []
 
     try:
         if isinstance(params, dict):
@@ -124,10 +120,10 @@ def dispatch(request_str: str, methods: Optional[ServerMethods] = None) -> str:
 
         if isinstance(res, Success):
             return json.dumps({
-                "jsopn_rpc": "2.0",
+                "jsonrpc": "2.0",
                 "result": res.result,
                 "id": req_id
-            })
+            }).decode("utf-8")
         elif isinstance(res, Error):
             return json.dumps({
                 "jsonrpc": "2.0",
@@ -136,12 +132,18 @@ def dispatch(request_str: str, methods: Optional[ServerMethods] = None) -> str:
                     "message": res.message,
                     "data": res.data
                 },
-                "req_id": req_id
-            })
+                "id": req_id
+            }).decode("utf-8")
         else:
-            return json.dumps({"jsonrpc": "2.0", "result": res, "id": req_id})
+            return json.dumps({
+                "jsonrpc": "2.0",
+                "result": res,
+                "id": req_id
+            }).decode("utf-8")
 
     except Exception as e:
+        logger.opt(
+            exception=True).error(f"Error in method '{method_name}': {e}")
         return json.dumps({
             "jsonrpc": "2.0",
             "error": {
@@ -150,14 +152,14 @@ def dispatch(request_str: str, methods: Optional[ServerMethods] = None) -> str:
                 "data": str(e),
             },
             "id": req_id
-        })
+        }).decode("utf-8")
 
 
 async def async_dispatch(request_str: str,
                          methods: Optional[ServerMethods] = None) -> str:
     """Dispatch a JSON-RPC request string to the appropiate method."""
 
-    method_dict = methods if methods is not None else _methods
+    method_dict = methods if methods is not None else _default_methods
 
     try:
         req = json.loads(request_str)
@@ -169,7 +171,7 @@ async def async_dispatch(request_str: str,
                 "message": "Parse error"
             },
             "id": None
-        })
+        }).decode("utf-8")
 
     if not isinstance(req, dict):
         return json.dumps({
@@ -179,7 +181,7 @@ async def async_dispatch(request_str: str,
                 "message": "Invalid Request"
             },
             "id": None
-        })
+        }).decode("utf-8")
 
     req_id = req.get("id")
     method_name = req.get("method")
@@ -193,10 +195,12 @@ async def async_dispatch(request_str: str,
             },
             "id": req_id
         }
-        return json.dumps(err_response)
+        return json.dumps(err_response).decode("utf-8")
 
     func = method_dict[method_name]
     params = req.get("params", [])
+    if params is None:
+        params = []
 
     try:
         if isinstance(params, dict):
@@ -211,7 +215,7 @@ async def async_dispatch(request_str: str,
                 "jsonrpc": "2.0",
                 "result": res.result,
                 "id": req_id
-            })
+            }).decode("utf-8")
         elif isinstance(res, Error):
             return json.dumps({
                 "jsonrpc": "2.0",
@@ -221,11 +225,17 @@ async def async_dispatch(request_str: str,
                     "data": res.data
                 },
                 "id": req_id
-            })
+            }).decode("utf-8")
         else:
-            return json.dumps({"jsonrpc": "2.0", "result": res, "id": req_id})
+            return json.dumps({
+                "jsonrpc": "2.0",
+                "result": res,
+                "id": req_id
+            }).decode("utf-8")
 
     except Exception as e:
+        logger.opt(
+            exception=True).error(f"Error in method '{method_name}': {e}")
         return json.dumps({
             "jsonrpc": "2.0",
             "error": {
@@ -234,23 +244,7 @@ async def async_dispatch(request_str: str,
                 "data": str(e)
             },
             "id": req_id
-        })
-
-
-class Ok:
-
-    def __init__(self, result: Any, id: Any):
-        self.result = result
-        self.id = id
-
-
-class JsonRpcError:
-
-    def __init__(self, code: int, message: str, data: Any, id: Any):
-        self.code = code
-        self.message = message
-        self.data = data
-        self.id = id
+        }).decode("utf-8")
 
 
 def request(method_name: str, params: Any = None) -> dict[str, Any]:
@@ -261,7 +255,7 @@ def request(method_name: str, params: Any = None) -> dict[str, Any]:
     return req
 
 
-def parse(response_dict: dict[str, Any]) -> Ok | JsonRpcError:
+def parse(response_dict: dict[str, Any]) -> Union[Ok, JsonRpcError]:
     """Parse a JSON-RPC request payload into an Ok or JsonRpcError"""
     if "error" in response_dict:
         err = response_dict["error"]
